@@ -8,8 +8,10 @@ output = `rspec`
 
 # define our match mapping
 matches = {
-  /\"(?<green>.*?)\"|\'(?<green>.*?)\'/ => '\k<green>',
-  /# (?<red>.*):(?<yellow>\d+)/         => '\k<red>:\k<yellow>'
+  /(?<green>\d+) examples, (?<red>\d+) failures, (?<yellow>\d+) pending/ => '\k<green> examples, \k<red> faiures, \k<yellow> pending',
+  /(?<blue>\d+\.\d+)/                                                    => '\k<blue>',
+  /\"(?<green>.*?)\"|\'(?<green>.*?)\'/                                  => '\k<green>',
+  /# (?<red>.*):(?<yellow>\d+)/                                          => '\k<red>:\k<yellow>'
 }
 
 matches.each do |match, match_output|
