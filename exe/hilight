@@ -16,7 +16,7 @@ Match.define_method(:output) do |string|
 end
 
 Group.define_method(:output) do
-  stdout = `#{cmd}`
+  stdout = `#{cmd} #{ARGV[1..-1].join(' ')}`
   matches.each { |match| match.output(stdout) }
 
   stdout
@@ -31,5 +31,11 @@ rspec = Group['rspec',
               ]
              ]
 
-require 'pry'; binding.pry
-puts rspec.output
+git = Group['git', [Match[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']]]
+
+# require 'pry'; binding.pry
+
+puts git.output if ARGV[0] == 'git'
+puts rspec.output if ARGV[0] == 'rspec'
+
+# %r{(?<red>\(?<blue>\d+\/\d+\))|(?<green>\d+%)|(?<blue>\d+\.\d+)|(?<yellow>[[:xdigit:]]{7})|To (?<magenta>.*)}
