@@ -4,9 +4,9 @@ gemspec
 
 group :development do
   gem 'bump'
-  gem "bundler", "~> 1.16"
-  gem "rake", "~> 10.0"
-  gem "rspec", "~> 3.0"
+  gem "bundler"
+  gem "rake"
+  gem "rspec"
   gem 'rubocop'
   gem 'rubocop-rspec'
   gem 'simplecov'
@@ -20,5 +20,7 @@ group :development, optional: true do
   gem 'guard-rspec'
   gem 'guard-rubocop'
   gem 'guard-yard'
+  gem 'guard-shell'
   gem 'pry'
+  gem 'solargraph'
 end

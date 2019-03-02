@@ -1,3 +1,30 @@
 #!/usr/bin/env ruby
 
 require "hilight"
+require 'pry'
+require 'term/ansicolor'
+
+output = `rspec`
+
+# define our match mapping
+matches = {
+  /\"(?<green>.*?)\"|\'(?<green>.*?)\'/ => '\k<green>',
+  /# (?<red>.*):(?<yellow>\d+)/         => '\k<red>:\k<yellow>'
+}
+
+matches.each do |match, match_output|
+  # map our colors in to the matches
+  match.names.map { |n| match_output.gsub!("\\k<#{n}>") { |s| Term::ANSIColor.color(n, s) } }
+  # map our string into the output
+  output.gsub!(match, match_output)
+end
+
+# match, match_output= [/# (?<red>.*):(?<yellow>\d+)/, '\k<red>:\k<yellow>']
+
+# # map our colors in
+# match.names.map { |n| match_output.gsub!("\\k<#{n}>") { |s| Term::ANSIColor.color(n, s)}}
+
+# map our strings in
+# output.gsub!(match, match_output)
+
+puts output
