@@ -22,5 +22,7 @@ group :development, optional: true do
   gem 'guard-yard'
   gem 'guard-shell'
   gem 'pry'
+  gem 'pry-debundle'
+  gem 'oj'
   gem 'solargraph'
 end

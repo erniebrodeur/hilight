@@ -37,3 +37,66 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/ernieb
 ## Code of Conduct
 
 Everyone interacting in the Hilight project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/erniebrodeur/hilight/blob/master/CODE_OF_CONDUCT.md).
+
+["patterns"].map { |m| Match.new m["regexp"],m["sub_string"]  }
+
+``` yaml
+:cmd: rspec
+:patterns:
+- :regexp: (?<green>\\d+) examples, (?<red>\\d+) failures, (?<yellow>\\d+) pending
+  :sub_string: \\k<green> examples, \\k<red> failures, \\k<yellow> pending
+- :regexp: (?<blue>\\d+\\.\\d+)
+  :sub_string: \\k<blue>
+- :regexp: (?<green>.*?)\"|\'(?<green>.*?)\'
+  :sub_string: \\k<green>
+- :regexp: "# (?<red>.*):(?<yellow>\d+)"
+  :sub_string: \\k<red>:\\k<yellow>
+```
+
+``` ruby
+{
+  "cmd" =>     "rspec",
+  "patterns" =>[
+    {
+      "regexp" =>    %r{(?<green>\d+) examples, (?<red>\d+) failures, (?<yellow>\d+) pending},
+      "sub_string" =>'\k<green> examples, \k<red> failures, \k<yellow> pending'
+    },
+    {
+      "regexp" =>    %r{(?<blue>\d+\.\d+)},
+      "sub_string" =>'\k<blue>'
+    },
+    {
+      "regexp" =>    %r{"(?<green>.*?)"|'(?<green>.*?)'},
+      "sub_string" =>'\k<green>'
+    },
+    {
+      "regexp" =>    %r{# (?<red>.*):(?<yellow>\d+)},
+      "sub_string" =>'\k<red>:\k<yellow>'
+    }
+  ]
+}
+```
+
+
+``` json
+{
+  ":cmd":"rspec",
+  ":patterns":[
+    {
+      ":regexp":"(?<green>\\d+) examples, (?<red>\\d+) failures, (?<yellow>\\d+) pending",
+      ":sub_string":"\\k<green> examples, \\k<red> failures, \\k<yellow> pending"
+    },
+    {
+      ":regexp":"(?<blue>\\d+\\.\\d+)",
+      ":sub_string":"\\k<blue>"
+    },
+    {
+      ":regexp":"(?<green>.*?)\\\"|'(?<green>.*?)'",
+      ":sub_string":"\\k<green>"
+    },
+    {
+      ":regexp":"\\# (?<red>.*):(?<yellow>\\d+)",
+      ":sub_string":"\\k<red>:\\k<yellow>"
+    }
+  ]
+}```

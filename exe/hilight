@@ -1,32 +1,35 @@
 #!/usr/bin/env ruby
 
 require "hilight"
-require 'pry'
 require 'term/ansicolor'
+require 'oj'
 
-output = `rspec`
+Match = Struct.new :regexp, :replacement
+Group = Struct.new :cmd, :matches
+Groups = Struct.new :group
 
-# define our match mapping
-matches = {
-  /(?<green>\d+) examples, (?<red>\d+) failures, (?<yellow>\d+) pending/ => '\k<green> examples, \k<red> faiures, \k<yellow> pending',
-  /(?<blue>\d+\.\d+)/                                                    => '\k<blue>',
-  /\"(?<green>.*?)\"|\'(?<green>.*?)\'/                                  => '\k<green>',
-  /# (?<red>.*):(?<yellow>\d+)/                                          => '\k<red>:\k<yellow>'
-}
-
-matches.each do |match, match_output|
+Match.define_method(:output) do |string|
   # map our colors in to the matches
-  match.names.map { |n| match_output.gsub!("\\k<#{n}>") { |s| Term::ANSIColor.color(n, s) } }
+  regexp.names.map { |n| replacement.gsub!("\\k<#{n}>") { |s| Term::ANSIColor.color(n, s) } }
   # map our string into the output
-  output.gsub!(match, match_output)
+  string.gsub!(regexp, replacement)
 end
 
-# match, match_output= [/# (?<red>.*):(?<yellow>\d+)/, '\k<red>:\k<yellow>']
+Group.define_method(:output) do
+  stdout = `#{cmd}`
+  matches.each { |match| match.output(stdout) }
 
-# # map our colors in
-# match.names.map { |n| match_output.gsub!("\\k<#{n}>") { |s| Term::ANSIColor.color(n, s)}}
+  stdout
+end
 
-# map our strings in
-# output.gsub!(match, match_output)
+rspec = Group['rspec',
+              [
+                Match[/(?<green>\d+) examples, (?<red>\d+) failures, (?<yellow>\d+) pending/, '\k<green> examples, \k<red> failures, \k<yellow> pending'],
+                Match[/(?<blue>\d+\.\d+)/, '\k<blue>'],
+                Match[/\"(?<green>.*?)\"|\'(?<green>.*?)\'/, '\k<green>'],
+                Match[/# (?<red>.*):(?<yellow>\d+)/, '\k<red>:\k<yellow>']
+              ]
+             ]
 
-puts output
+require 'pry'; binding.pry
+puts rspec.output
