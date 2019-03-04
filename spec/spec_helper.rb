@@ -1,5 +1,6 @@
 require "bundler/setup"
 require "hilight"
+require 'term/ansicolor'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
