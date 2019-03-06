@@ -14,15 +14,8 @@ filters = {
     Pattern[/\"(?<green>.*?)\"|\'(?<green>.*?)\'/, '\k<green>'],
     Pattern[/# (?<red>.*):(?<yellow>\d+)/, '\k<red>:\k<yellow>']
   ]],
-  "git" => Patterns[[Pattern[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']]]
+  "git"   => Patterns[[Pattern[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']]]
 }
-
-# # determine our output
-# puts git.output if $PROGRAM_NAME == 'git'
-# puts rspec.output if $PROGRAM_NAME == 'rspec'
-
-# require 'pry';binding.pry
-# %r{(?<red>\(?<blue>\d+\/\d+\))|(?<green>\d+%)|(?<blue>\d+\.\d+)|(?<yellow>[[:xdigit:]]{7})|To (?<magenta>.*)}
 
 if (f = filters[ARGV[0]])
   puts f.output(`#{ARGV.join(" ")}`)
