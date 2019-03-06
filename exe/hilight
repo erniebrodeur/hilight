@@ -2,24 +2,50 @@
 
 require "hilight"
 require 'term/ansicolor'
-require 'oj'
-require 'pry'
+require 'open3'
 
 include Hilight #rubocop:disable all
 
-filters = {
-  "rspec" => Patterns[[
+Filter = Struct.new(:cmd, :patterns)
+
+filters = [
+  Filter["rspec", Patterns[[
     Pattern[/(?<green>\d+) examples, (?<red>\d+) failures, (?<yellow>\d+) pending/, '\k<green> examples, \k<red> failures, \k<yellow> pending'],
     Pattern[/(?<blue>\d+\.\d+)/, '\k<blue>'],
     Pattern[/\"(?<green>.*?)\"|\'(?<green>.*?)\'/, '\k<green>'],
     Pattern[/# (?<red>.*):(?<yellow>\d+)/, '\k<red>:\k<yellow>']
-  ]],
-  "git"   => Patterns[[Pattern[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']]]
-}
+  ]]],
+  Filter[/-h/, Patterns[[Pattern[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']]]],
+  Filter["git",   Patterns[[Pattern[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']]]],
+  Filter["ruby",  Patterns[[Pattern[/(.*from |)(?<red>.*):(?<blue>\d+)(?::in )(?<yellow>`.*')/, '\k<red>\k<blue>\k<yellow>']]]]
+]
 
-if (f = filters[ARGV[0]])
-  puts f.output(`#{ARGV.join(" ")}`)
-  exit
+Filter.define_method(:match?) do |string|
+  case cmd
+  when (String || Symbol) then (cmd.to_s == string.to_s)
+  when Regexp then (cmd.match? string.to_s)
+  else false
+  end
 end
 
-exec ARGV.join(" ")
+filters.define_singleton_method(:find) do |string|
+  each { |f| return f if f.match? string }
+
+  nil
+end
+
+filters.define_singleton_method(:run) do
+  arg_string = ARGV.join(' ')
+
+  f = filters.find arg_string
+  exec arg_string unless f
+
+  output, process = Open3.capture2(arg_string)
+
+  abort process.exitstatus if process.exitstatus.positive?
+
+  puts f.patterns.output(output)
+end
+
+abort 'hilight <cmd>' unless ARGV.any?
+filters.run
