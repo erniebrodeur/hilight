@@ -40,7 +40,7 @@ filters.define_singleton_method(:run) do
   f = filters.find arg_string
   exec arg_string unless f
 
-  output, process = Open3.capture2(arg_string)
+  output, process = Open3.capture2e(arg_string)
 
   abort process.exitstatus if process.exitstatus.positive?
 
