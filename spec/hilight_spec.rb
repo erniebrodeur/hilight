@@ -1,25 +1,5 @@
 require 'spec_helper'
 
-Hilight::Pattern = Struct.new :regexp, :replacement
-Hilight::Pattern.define_method(:output) do |input|
-  # map our colors in to the matches
-  regexp.names.map { |n| replacement.gsub!("\\k<#{n}>") { |s| Term::ANSIColor.color(n, s) } }
-  # map our input into the output, return the original if it doesn't map (replace) anything.
-  input.gsub!(regexp, replacement) || input
-end
-
-Hilight::Patterns = Struct.new :patterns
-Hilight::Patterns.define_method(:output) do |input|
-  patterns.each { |pattern| input = pattern.output(input) }
-  input
-end
-
-Hilight.define_singleton_method(:load) do |filename|
-  return Kernel.load filename if File.exist? filename
-
-  Kernel.load "#{Dir.home}/.config/hilight/patterns/#{filename}"
-end
-
 RSpec.describe Hilight do
   let(:regexp) { /(?<green>'.*')|(?<blue>".*")/ }
   let(:replacement) { '\k<green>\k<blue>' }
@@ -39,14 +19,13 @@ RSpec.describe Hilight do
       allow(Kernel).to receive(:load).with(filename).and_return nil
     end
 
-      before { allow(File).to receive(:exist?).with(filename).and_return true }
+    specify do
+      allow(File).to receive(:exist?).with(filename).and_return true
+      described_class.load(filename)
+      expect(Kernel).to have_received(:load).with filename
+    end
 
-      specify do
-        described_class.load(filename)
-        expect(Kernel).to have_received(:load).with filename
-      end
-
-    context "when the filename does not exist" do
+    context "when the filename does not exist, Kernel" do
       let(:expected_filename) { "#{Dir.home}/.config/hilight/patterns/#{filename}" }
 
       before { allow(File).to receive(:exist?).with(filename).and_return false }
@@ -56,25 +35,6 @@ RSpec.describe Hilight do
         described_class.load(filename)
         expect(Kernel).to have_received(:load).with expected_filename
       end
-    end
-
-    context "when the file could not be loaded from the config directory" do
-      it "is expected to look in the gem for any default pattern"
-    end
-  end
-
-  describe Hilight::Patterns do
-    it { is_expected.to have_attributes(patterns: a_kind_of(Array).or(be_nil)) }
-
-    describe "#output" do
-      let(:pattern) { Hilight::Pattern[regexp, replacement] }
-      let(:subject) { described_class[[pattern]].output(string) }
-
-      it "is expected to run each pattern over the input string" do
-        expect(subject).to include(Term::ANSIColor.blue).and(include(Term::ANSIColor.green))
-      end
-
-      it { is_expected.to be_a_kind_of String }
     end
   end
 
@@ -99,6 +59,21 @@ RSpec.describe Hilight do
           expect(subject).to eq string
         end
       end
+    end
+  end
+
+  describe Hilight::Patterns do
+    it { is_expected.to have_attributes(patterns: a_kind_of(Array).or(be_nil)) }
+
+    describe "#output" do
+      let(:pattern) { Hilight::Pattern[regexp, replacement] }
+      let(:subject) { described_class[[pattern]].output(string) }
+
+      it "is expected to run each pattern over the input string" do
+        expect(subject).to include(Term::ANSIColor.blue).and(include(Term::ANSIColor.green))
+      end
+
+      it { is_expected.to be_a_kind_of String }
     end
   end
 end

@@ -1,8 +1,5 @@
 require "bundler/setup"
 require "hilight"
-require 'term/ansicolor'
-require "bundler/setup"
-Bundler.require(:development)
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

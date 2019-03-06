@@ -3,43 +3,30 @@
 require "hilight"
 require 'term/ansicolor'
 require 'oj'
+require 'pry'
 
-# create our models
-Match = Struct.new :regexp, :replacement
-Group = Struct.new :cmd, :matches
-Groups = Struct.new :group
+include Hilight #rubocop:disable all
 
-# attach our methods
-Match.define_method(:output) do |string|
-  # map our colors in to the matches
-  regexp.names.map { |n| replacement.gsub!("\\k<#{n}>") { |s| Term::ANSIColor.color(n, s) } }
-  # map our string into the output
-  string.gsub!(regexp, replacement)
-end
+filters = {
+  "rspec" => Patterns[[
+    Pattern[/(?<green>\d+) examples, (?<red>\d+) failures, (?<yellow>\d+) pending/, '\k<green> examples, \k<red> failures, \k<yellow> pending'],
+    Pattern[/(?<blue>\d+\.\d+)/, '\k<blue>'],
+    Pattern[/\"(?<green>.*?)\"|\'(?<green>.*?)\'/, '\k<green>'],
+    Pattern[/# (?<red>.*):(?<yellow>\d+)/, '\k<red>:\k<yellow>']
+  ]],
+  "git" => Patterns[[Pattern[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']]]
+}
 
-Group.define_method(:output) do
-  call_string = cmd
-  call_string += " " + ARGV[1..-1].join(' ') if ARGV.count > 0
-  stdout = `#{call_string}`
-  matches.each { |match| match.output(stdout) }
-
-  stdout
-end
-
-# load our data
-rspec = Group['rspec',
-              [
-                Match[/(?<green>\d+) examples, (?<red>\d+) failures, (?<yellow>\d+) pending/, '\k<green> examples, \k<red> failures, \k<yellow> pending'],
-                Match[/(?<blue>\d+\.\d+)/, '\k<blue>'],
-                Match[/\"(?<green>.*?)\"|\'(?<green>.*?)\'/, '\k<green>'],
-                Match[/# (?<red>.*):(?<yellow>\d+)/, '\k<red>:\k<yellow>']
-              ]
-             ]
-git = Group['git', [Match[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']]]
-
-# determine our output
-puts git.output if $PROGRAM_NAME == 'git'
-puts rspec.output if $PROGRAM_NAME == 'rspec'
+# # determine our output
+# puts git.output if $PROGRAM_NAME == 'git'
+# puts rspec.output if $PROGRAM_NAME == 'rspec'
 
 # require 'pry';binding.pry
 # %r{(?<red>\(?<blue>\d+\/\d+\))|(?<green>\d+%)|(?<blue>\d+\.\d+)|(?<yellow>[[:xdigit:]]{7})|To (?<magenta>.*)}
+
+if (f = filters[ARGV[0]])
+  puts f.output(`#{ARGV.join(" ")}`)
+  exit
+end
+
+exec ARGV.join(" ")
