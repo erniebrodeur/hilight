@@ -19,10 +19,10 @@ group :development, optional: true do
   gem 'guard-bundler'
   gem 'guard-rspec'
   gem 'guard-rubocop'
-  gem 'guard-yard'
   gem 'guard-shell'
+  gem 'guard-yard'
+  gem 'oj'
   gem 'pry'
   gem 'pry-debundle'
-  gem 'oj'
   gem 'solargraph'
 end

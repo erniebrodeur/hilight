@@ -14,13 +14,53 @@ Hilight::Patterns.define_method(:output) do |input|
   input
 end
 
+Hilight.define_singleton_method(:load) do |filename|
+  return Kernel.load filename if File.exist? filename
+
+  Kernel.load "#{Dir.home}/.config/hilight/patterns/#{filename}"
+end
+
 RSpec.describe Hilight do
   let(:regexp) { /(?<green>'.*')|(?<blue>".*")/ }
   let(:replacement) { '\k<green>\k<blue>' }
   let(:string) { "here is 'an inline comment' and \"another\"" }
 
-  it "has a version number" do
+  it { is_expected.to respond_to(:load).with(1).arguments }
+
+  it "is expected to have a version number" do
     expect(Hilight::VERSION).not_to be nil
+  end
+
+  describe "#load" do
+    let(:filename) { 'a_file.rb' }
+
+    before do
+      allow(File).to receive(:exist?).and_call_original
+      allow(Kernel).to receive(:load).with(filename).and_return nil
+    end
+
+      before { allow(File).to receive(:exist?).with(filename).and_return true }
+
+      specify do
+        described_class.load(filename)
+        expect(Kernel).to have_received(:load).with filename
+      end
+
+    context "when the filename does not exist" do
+      let(:expected_filename) { "#{Dir.home}/.config/hilight/patterns/#{filename}" }
+
+      before { allow(File).to receive(:exist?).with(filename).and_return false }
+
+      specify do
+        allow(Kernel).to receive(:load).with expected_filename
+        described_class.load(filename)
+        expect(Kernel).to have_received(:load).with expected_filename
+      end
+    end
+
+    context "when the file could not be loaded from the config directory" do
+      it "is expected to look in the gem for any default pattern"
+    end
   end
 
   describe Hilight::Patterns do
@@ -53,7 +93,7 @@ RSpec.describe Hilight do
       end
 
       context "when no replacement is found" do
-        let(:string) { 'not a matching string'}
+        let(:string) { 'not a matching string' }
 
         it "is expected to return the original string" do
           expect(subject).to eq string

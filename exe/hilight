@@ -38,8 +38,8 @@ rspec = Group['rspec',
 git = Group['git', [Match[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']]]
 
 # determine our output
-puts git.output if $0 == 'git'
-puts rspec.output if $0 == 'rspec'
+puts git.output if $PROGRAM_NAME == 'git'
+puts rspec.output if $PROGRAM_NAME == 'rspec'
 
 # require 'pry';binding.pry
 # %r{(?<red>\(?<blue>\d+\/\d+\))|(?<green>\d+%)|(?<blue>\d+\.\d+)|(?<yellow>[[:xdigit:]]{7})|To (?<magenta>.*)}
