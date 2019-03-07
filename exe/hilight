@@ -16,7 +16,7 @@ filters = [
     Pattern[/# (?<red>.*):(?<yellow>\d+)/, '\k<red>:\k<yellow>']
   ]]],
   Filter[/-h|--help|help/, Patterns[[
-    Pattern[/(?<green>\[.*?\])|(?<magenta>(?:--(?:\[no-\]|)(?:\w|-)+)|-[A-Za-z])/, '\k<green>\k<magenta>']
+    Pattern[%r{(?<yellow>\B-{1,2}[\w-]+)|(?<blue>[\[\]\(\)\{\}\<\>])|(?<green>["'].*?["'])}, '\k<yellow>\k<blue>\k<green>']
   ]]],
   Filter["git",   Patterns[[Pattern[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']]]],
   Filter["ruby",  Patterns[[
