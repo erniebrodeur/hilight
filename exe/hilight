@@ -16,10 +16,15 @@ filters = [
     Pattern[/# (?<red>.*):(?<yellow>\d+)/, '\k<red>:\k<yellow>']
   ]]],
   Filter[/-h|--help|help/, Patterns[[
-    Pattern[%r{(?<green>\[.*?\])|(?<magenta>(?:--(?:\[no-\]|)(?:\w|-)+)|-[A-Za-z])}, '\k<green>\k<magenta>'],
+    Pattern[/(?<green>\[.*?\])|(?<magenta>(?:--(?:\[no-\]|)(?:\w|-)+)|-[A-Za-z])/, '\k<green>\k<magenta>']
   ]]],
   Filter["git",   Patterns[[Pattern[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']]]],
-  Filter["ruby",  Patterns[[Pattern[/(.*from |)(?<red>.*):(?<blue>\d+)(?::in )(?<yellow>`.*')/, '\k<red>\k<blue>\k<yellow>']]]]
+  Filter["ruby",  Patterns[[
+    Pattern[/(.*from |)(?<red>.*):(?<blue>\d+)(?::in )(?<yellow>`.*')/, '\k<red>\k<blue>\k<yellow>']
+  ]]],
+  Filter["default", Patterns[[
+    Pattern[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']
+  ]]]
 ]
 
 Filter.define_method(:match?) do |string|
@@ -32,15 +37,13 @@ end
 
 filters.define_singleton_method(:find) do |string|
   each { |f| return f if f.match? string }
-
-  nil
+  filters.find "default"
 end
 
 filters.define_singleton_method(:run) do
   arg_string = ARGV.join(' ')
 
   f = filters.find arg_string
-  exec arg_string unless f
 
   output, process = Open3.capture2e(arg_string)
 
