@@ -47,9 +47,9 @@ filters.define_singleton_method(:run) do
 
   output, process = Open3.capture2e(arg_string)
 
-  abort process.exitstatus if process.exitstatus.positive?
-
   puts f.patterns.output(output)
+
+  exit process.exitstatus
 end
 
 abort 'hilight <cmd>' unless ARGV.any?
