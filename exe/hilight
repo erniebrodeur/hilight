@@ -6,9 +6,7 @@ require 'open3'
 
 include Hilight #rubocop:disable all
 
-Filter = Struct.new(:cmd, :patterns)
-
-filters = [
+filters = Filters[[
   Filter["rspec", Patterns[[
     Pattern[/(?<green>\d+) examples, (?<red>\d+) failures, (?<yellow>\d+) pending/, '\k<green> examples, \k<red> failures, \k<yellow> pending'],
     Pattern[/(?<blue>\d+\.\d+)/, '\k<blue>'],
@@ -16,7 +14,7 @@ filters = [
     Pattern[/# (?<red>.*):(?<yellow>\d+)/, '\k<red>:\k<yellow>']
   ]]],
   Filter[/-h|--help|help/, Patterns[[
-    Pattern[%r{(?<yellow>\B-{1,2}[\w-]+)|(?<blue>[\[\]\(\)\{\}\<\>])|(?<green>["'].*?["'])}, '\k<yellow>\k<blue>\k<green>']
+    Pattern[/(?<yellow>\B-{1,2}[\w-]+)|(?<blue>[\[\]\(\)\{\}\<\>])|(?<green>["'].*?["'])/, '\k<yellow>\k<blue>\k<green>']
   ]]],
   Filter["git",   Patterns[[Pattern[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']]]],
   Filter["ruby",  Patterns[[
@@ -25,32 +23,8 @@ filters = [
   Filter["default", Patterns[[
     Pattern[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']
   ]]]
-]
-
-Filter.define_method(:match?) do |string|
-  case cmd
-  when (String || Symbol) then (cmd.to_s == string.to_s)
-  when Regexp then (cmd.match? string.to_s)
-  else false
-  end
-end
-
-filters.define_singleton_method(:find) do |string|
-  each { |f| return f if f.match? string }
-  filters.find "default"
-end
-
-filters.define_singleton_method(:run) do
-  arg_string = ARGV.join(' ')
-
-  f = filters.find arg_string
-
-  output, process = Open3.capture2e(arg_string)
-
-  puts f.patterns.output(output)
-
-  exit process.exitstatus
-end
+]]
 
 abort 'hilight <cmd>' unless ARGV.any?
+
 filters.run

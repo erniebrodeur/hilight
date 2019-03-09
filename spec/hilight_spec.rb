@@ -38,6 +38,44 @@ RSpec.describe Hilight do
     end
   end
 
+  describe Hilight::Filter do
+    let(:patterns) { Hilight::Pattern[regexp, replacement] }
+    let(:cmd) { /not_a_match/ }
+
+    it { is_expected.to respond_to(:match?).with(1).arguments}
+
+    describe "#match?" do
+      let(:subject) { described_class[cmd, patterns].match? 'some command'}
+
+      it { is_expected.to be false }
+
+      context "when the string matches the cmd pattern" do
+        let(:subject) { described_class[/some command/, patterns].match? 'some command'}
+
+        it { is_expected.to be true }
+      end
+    end
+  end
+
+  describe Hilight::Filters do
+    it { is_expected.to respond_to(:find).with(1).arguments}
+
+    describe "#find" do
+      it "is expected to return the first entry that matches the argument string"
+    end
+
+    describe "#run" do
+      it "is expected to find a filter ARGV"
+      it "is expected to execute ARGV"
+      it "is expected to return the hilighted output of patterns"
+      it "is expected to return the exitstatus from argv"
+
+      context "when it cannot find a matching filter" do
+        it "is expected to return default"
+      end
+    end
+  end
+
   describe Hilight::Pattern do
     it { is_expected.to have_attributes(regexp: a_kind_of(Regexp).or(be_nil)) }
     it { is_expected.to have_attributes(replacement: a_kind_of(String).or(be_nil)) }
