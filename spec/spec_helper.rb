@@ -1,6 +1,9 @@
 require "bundler/setup"
 require "hilight"
 
+RSpec::Matchers.alias_matcher :return_a_kind_of, :be_a_kind_of
+RSpec::Matchers.alias_matcher :return_nil, :be_nil
+
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
   config.example_status_persistence_file_path = ".rspec_status"

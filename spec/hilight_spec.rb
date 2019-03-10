@@ -1,8 +1,10 @@
 require 'spec_helper'
 
 RSpec.describe Hilight do
+  let(:expected_result) { expect(subject.call) } # rubocop: disable all
   let(:regexp) { /(?<green>'.*')|(?<blue>".*")/ }
-  let(:replacement) { '\k<green>\k<blue>' }
+  let(:substitution) { '\k<green>\k<blue>' }
+  let(:result) { subject.call }
   let(:string) { "here is 'an inline comment' and \"another\"" }
 
   it { is_expected.to respond_to(:load).with(1).arguments }
@@ -38,101 +40,31 @@ RSpec.describe Hilight do
     end
   end
 
-  describe Hilight::Filter do
-    let(:patterns) { Hilight::Pattern[regexp, replacement] }
-    let(:cmd) { /not_a_match/ }
-
-    it { is_expected.to respond_to(:match?).with(1).arguments }
-
-    describe "#match?" do
-      let(:subject) { described_class[cmd, patterns].match? 'some command' }
-
-      it { is_expected.to be false }
-
-      context "when the string matches the cmd pattern" do
-        let(:subject) { described_class[/some command/, patterns].match? 'some command' }
-
-        it { is_expected.to be true }
-      end
-    end
-  end
-
-  describe Hilight::Filters do
-    let(:filter) { Hilight::Filter['this', []] }
-    let(:filters) { described_class[[filter]] }
-
-    it { is_expected.to respond_to(:find).with(1).arguments }
-    it { is_expected.to respond_to(:exec).with(1).arguments }
-    it { is_expected.to respond_to(:output).with(2).arguments }
-
-    describe "#find" do
-      let(:subject) { filters.find('this') }
-
-      it "is expected to return the first entry that matches the argument" do
-        expect(subject).to be filter
-      end
-    end
-
-    describe "#output" do
-      let(:cmd) { 'a_cmd' }
-      let(:string) { "a output string"}
-      let(:subject) { filters.output(cmd, string)}
-
-      it "is expected to search for the cmd in the filters"
-      it "is expected to call filter.patterns.output with the string"
-      it "is expected to return the result"
-    end
-
-    describe "#exec" do
-      let(:subject) { filters.find('this') }
-
-      it "is expected to find a filter from the argument"
-      it "is expected to execute the argument"
-      it "is expected to return the hilighted exec of patterns"
-      it "is expected to return the exitstatus from argument"
-
-      context "when it cannot find a matching filter" do
-        it "is expected to return default"
-      end
-    end
-  end
-
   describe Hilight::Pattern do
     it { is_expected.to have_attributes(regexp: a_kind_of(Regexp).or(be_nil)) }
-    it { is_expected.to have_attributes(replacement: a_kind_of(String).or(be_nil)) }
-    it { is_expected.to respond_to(:output).with(1).arguments }
+    it { is_expected.to have_attributes(substitution: a_kind_of(String).or(be_nil)) }
+    it { is_expected.to respond_to(:transform).with(1).arguments}
+    xit { is_expected.to respond_to(:transform_stream).with(1).arguments}
+    xit { is_expected.to respond_to(:match?).with(1).arguments}
 
-    describe "#output" do
-      let(:subject) { described_class[regexp, replacement].output(string) }
+    describe "#transform" do
+      let(:subject) { proc { Hilight::Pattern[regexp, substitution].transform(string) } }
 
-      it { is_expected.to be_a_kind_of String }
-
-      it "is expected to include ansi color codes" do
-        expect(subject).to include(Term::ANSIColor.blue)
-      end
-
-      context "when no replacement is found" do
-        let(:string) { 'not a matching string' }
-
-        it "is expected to return the original string" do
-          expect(subject).to eq string
-        end
+      it { expected_result.to return_a_kind_of String}
+      it "is expected to include ANSI color codes" do
+        expected_result.to include(Term::ANSIColor.blue)
       end
     end
   end
 
-  describe Hilight::Patterns do
-    it { is_expected.to have_attributes(patterns: a_kind_of(Array).or(be_nil)) }
+  ### String IO Arch
+  # pattern => Struct[:regexp, :substitution]
+  #             .transform(input_string) (String)
+  #             .transform_stream(IO) (IO)
+  #             .match?(input_string) (Boolean)
 
-    describe "#output" do
-      let(:pattern) { Hilight::Pattern[regexp, replacement] }
-      let(:subject) { described_class[[pattern]].output(string) }
+  # patterns => pattern[]
+  #             .transform(input_string, stop_on_first: false) (String)
+  #             .transform_stream(IO) (IO)
 
-      it "is expected to output each pattern over the input string" do
-        expect(subject).to include(Term::ANSIColor.blue).and(include(Term::ANSIColor.green))
-      end
-
-      it { is_expected.to be_a_kind_of String }
-    end
-  end
 end
