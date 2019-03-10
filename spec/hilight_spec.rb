@@ -42,15 +42,15 @@ RSpec.describe Hilight do
     let(:patterns) { Hilight::Pattern[regexp, replacement] }
     let(:cmd) { /not_a_match/ }
 
-    it { is_expected.to respond_to(:match?).with(1).arguments}
+    it { is_expected.to respond_to(:match?).with(1).arguments }
 
     describe "#match?" do
-      let(:subject) { described_class[cmd, patterns].match? 'some command'}
+      let(:subject) { described_class[cmd, patterns].match? 'some command' }
 
       it { is_expected.to be false }
 
       context "when the string matches the cmd pattern" do
-        let(:subject) { described_class[/some command/, patterns].match? 'some command'}
+        let(:subject) { described_class[/some command/, patterns].match? 'some command' }
 
         it { is_expected.to be true }
       end
@@ -58,17 +58,38 @@ RSpec.describe Hilight do
   end
 
   describe Hilight::Filters do
-    it { is_expected.to respond_to(:find).with(1).arguments}
+    let(:filter) { Hilight::Filter['this', []] }
+    let(:filters) { described_class[[filter]] }
+
+    it { is_expected.to respond_to(:find).with(1).arguments }
+    it { is_expected.to respond_to(:exec).with(1).arguments }
+    it { is_expected.to respond_to(:output).with(2).arguments }
 
     describe "#find" do
-      it "is expected to return the first entry that matches the argument string"
+      let(:subject) { filters.find('this') }
+
+      it "is expected to return the first entry that matches the argument" do
+        expect(subject).to be filter
+      end
     end
 
-    describe "#run" do
-      it "is expected to find a filter ARGV"
-      it "is expected to execute ARGV"
-      it "is expected to return the hilighted output of patterns"
-      it "is expected to return the exitstatus from argv"
+    describe "#output" do
+      let(:cmd) { 'a_cmd' }
+      let(:string) { "a output string"}
+      let(:subject) { filters.output(cmd, string)}
+
+      it "is expected to search for the cmd in the filters"
+      it "is expected to call filter.patterns.output with the string"
+      it "is expected to return the result"
+    end
+
+    describe "#exec" do
+      let(:subject) { filters.find('this') }
+
+      it "is expected to find a filter from the argument"
+      it "is expected to execute the argument"
+      it "is expected to return the hilighted exec of patterns"
+      it "is expected to return the exitstatus from argument"
 
       context "when it cannot find a matching filter" do
         it "is expected to return default"
@@ -107,7 +128,7 @@ RSpec.describe Hilight do
       let(:pattern) { Hilight::Pattern[regexp, replacement] }
       let(:subject) { described_class[[pattern]].output(string) }
 
-      it "is expected to run each pattern over the input string" do
+      it "is expected to output each pattern over the input string" do
         expect(subject).to include(Term::ANSIColor.blue).and(include(Term::ANSIColor.green))
       end
 

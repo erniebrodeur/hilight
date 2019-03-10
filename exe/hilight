@@ -8,7 +8,7 @@ include Hilight #rubocop:disable all
 
 filters = Filters[[
   Filter["rspec", Patterns[[
-    Pattern[/(?<green>\d+) examples, (?<red>\d+) failures, (?<yellow>\d+) pending/, '\k<green> examples, \k<red> failures, \k<yellow> pending'],
+    Pattern[/(?<green>\d+) examples, (?<red>\d+) failures?, (?<yellow>\d+) pending/, '\k<green> examples, \k<red> failures, \k<yellow> pending'],
     Pattern[/(?<blue>\d+\.\d+)/, '\k<blue>'],
     Pattern[/\"(?<green>.*?)\"|\'(?<green>.*?)\'/, '\k<green>'],
     Pattern[/# (?<red>.*):(?<yellow>\d+)/, '\k<red>:\k<yellow>']
@@ -27,4 +27,4 @@ filters = Filters[[
 
 abort 'hilight <cmd>' unless ARGV.any?
 
-filters.run
+filters.exec ARGV.join(' ')

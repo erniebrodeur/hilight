@@ -100,3 +100,24 @@ Everyone interacting in the Hilight project’s codebases, issue trackers, chat 
     }
   ]
 }```
+
+
+(pick our input from cmd matching)
+ ->(input)->(select our pattern[])->(stringify input)
+ ->(add colors)->(stringify output)
+
+
+### Pattern selection / cmdline matching
+filter => Struct[:filter_regexp, :selected_patterns]
+            .find(input_string) (patterns)
+
+
+### String IO Arch
+pattern => Struct[:regexp, :replacement_pattern]
+             .transform(input_string) (String)
+             .transform_stream(IO) (IO)
+             .match?(input_string) (Boolean)
+
+patterns => pattern[]
+             .transform(input_string, stop_on_first: false) (String)
+             .transform_stream(IO) (IO)

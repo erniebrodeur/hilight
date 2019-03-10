@@ -17,17 +17,15 @@ Hilight::Filter.define_method(:match?) do |string|
 end
 
 Hilight::Filters = Struct.new(:collection)
-Hilight::Filters.define_method(:find) do |string|
-  filter = collection.find { |f| f.match? string } || collection.find { |e| e.cmd == 'default' }
+Hilight::Filters.define_method(:find) do |match|
+  filter = collection.find { |f| f.match? match } || collection.find { |e| e.cmd == 'default' }
   filter
 end
 
-Hilight::Filters.define_method(:run) do
-  arg_string = ARGV.join(' ')
+Hilight::Filters.define_method(:exec) do |string|
+  f = find string
 
-  f = find arg_string
-
-  output, process = Open3.capture2e(arg_string)
+  output, process = Open3.capture2e(string)
 
   puts f.patterns.output(output)
 
