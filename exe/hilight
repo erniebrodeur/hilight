@@ -6,25 +6,66 @@ require 'open3'
 
 include Hilight #rubocop:disable all
 
-filters = Filters[[
-  Filter["rspec", Patterns[[
-    Pattern[/(?<green>\d+) examples, (?<red>\d+) failures?, (?<yellow>\d+) pending/, '\k<green> examples, \k<red> failures, \k<yellow> pending'],
-    Pattern[/(?<blue>\d+\.\d+)/, '\k<blue>'],
-    Pattern[/\"(?<green>.*?)\"|\'(?<green>.*?)\'/, '\k<green>'],
-    Pattern[/# (?<red>.*):(?<yellow>\d+)/, '\k<red>:\k<yellow>']
-  ]]],
-  Filter[/-h|--help|help/, Patterns[[
-    Pattern[/(?<yellow>\B-{1,2}[\w-]+)|(?<blue>[\[\]\(\)\{\}\<\>])|(?<green>["'].*?["'])/, '\k<yellow>\k<blue>\k<green>']
-  ]]],
-  Filter["git",   Patterns[[Pattern[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']]]],
-  Filter["ruby",  Patterns[[
-    Pattern[/(.*from |)(?<red>.*):(?<blue>\d+)(?::in )(?<yellow>`.*')/, '\k<red>\k<blue>\k<yellow>']
-  ]]],
-  Filter["default", Patterns[[
-    Pattern[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']
-  ]]]
+Hilight::Filter = Struct.new(:cmd, :patterns)
+Hilight::Filter.define_method(:match?) do |string|
+  case cmd
+  when (String || Symbol) then (cmd.to_s == string.to_s)
+  when Regexp then (cmd.match? string.to_s)
+  else false
+  end
+end
+
+Hilight::Filters = Struct.new(:collection)
+Hilight::Filters.define_method(:find) do |match|
+  collection.find { |f| f.match? match } || collection.find { |e| e.cmd == 'default' }
+end
+
+Hilight::Filters.define_method(:exec) do |string|
+  f = find string
+  output, process = Open3.capture2e(string)
+  puts f.patterns.transform(output)
+  exit process.exitstatus
+end
+
+rspec = Fabric[[
+  Pattern[/(?<green>\d+) examples, (?<red>\d+) failures?, (?<yellow>\d+) pending/, '\k<green> examples, \k<red> failures, \k<yellow> pending'],
+  Pattern[/(?<blue>\d+\.\d+)/, '\k<blue>'],
+  Pattern[/\"(?<green>.*?)\"|\'(?<green>.*?)\'/, '\k<green>'],
+  Pattern[/# (?<red>.*):(?<yellow>\d+)/, '\k<red>:\k<yellow>']
 ]]
 
-abort 'hilight <cmd>' unless ARGV.any?
+help = Fabric[[Pattern[/(?<yellow>\B-{1,2}[\w-]+)|(?<blue>[\[\]\(\)\{\}\<\>])|(?<green>["'].*?["'])/, '\k<yellow>\k<blue>\k<green>']]]
+git = Fabric[[Pattern[/(?<green>'.*')|(?<blue>".*")/, '\k<green>\k<blue>']]]
+ruby = Fabric[[Pattern[/(.*from |)(?<red>.*):(?<blue>\d+)(?::in )(?<yellow>`.*')/, '\k<red>\k<blue>\k<yellow>']]]
+default = Fabric[[Pattern[/(?<green>\d+\.\d+)|(?<blue>".*")/, '\k<green>\k<blue>']]]
 
-filters.exec ARGV.join(' ')
+filters = Filters[[
+  Filter["rspec", rspec],
+  Filter[/-h|--help|help/, help],
+  Filter["git", git],
+  Filter["ruby", ruby],
+  Filter["default", default]
+]]
+
+Fabric.define_method(:streaming_exec) do |cmd|
+  Open3.popen3(cmd) do |_stdin, stdout, _stderr, thr|
+    loop do
+      sleep 0.001
+      $stdout << transform(stdout.readpartial(stdout.nread))
+      break unless thr.alive?
+    end
+  end
+end
+
+Hilight::Filters.define_method(:exec) do |string|
+  f = find string
+  output, process = Open3.capture2e(string)
+  puts f.patterns.transform(output)
+  exit process.exitstatus
+end
+
+if ARGV.any?
+  filters.exec ARGV.join(' ')
+else
+  $stdout << default.transform($stdin.readline) until $stdin.eof?
+end

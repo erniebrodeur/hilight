@@ -2,7 +2,7 @@ clearing :on
 directories [".", "tmp"]
 
 guard(:shell, timeout: 30) do
-  watch("exe/hilight") { puts `ruby exe/hilight` }
+  watch("exe/hilight") { puts `ruby exe/hilight rspec -h` }
 end
 
 group :main, halt_on_fail: true do

@@ -121,3 +121,9 @@ pattern => Struct[:regexp, :replacement_pattern]
 patterns => pattern[]
              .transform(input_string, stop_on_first: false) (String)
              .transform_stream(IO) (IO)
+
+# major things to do
+# update exe, decide final shape (stdin vs exec list vs ...)
+# remove need for termansi by wiring up my own color lambda's
+# wire up themes via lamdas
+# wire up loading (selective or otherwise) of a set of default hilight's
