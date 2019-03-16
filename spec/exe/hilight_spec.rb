@@ -3,7 +3,7 @@ require 'spec_helper'
 require 'open3'
 
 RSpec.describe "exe/hilight" do
-  let(:subject) { (Open3.capture2e('hilight rspec -h')) }
+  let(:subject) { Open3.capture2e('hilight rspec -h') }
   let(:output) { subject[0] }
   let(:pid) { subject[1] }
 
@@ -12,20 +12,36 @@ RSpec.describe "exe/hilight" do
   end
 
   context "with no supplied command" do
-    it "is expected to capture STDIN"
+    let(:subject) { Open3.capture2e('hilight') }
+
+    it "is expected to capture STDIN" do
+      expect(output).to eq ''
+    end
   end
 
   context "with a option flag before the supplied command" do
-    it "is expected to parse the option"
+    let(:subject) { Open3.capture2e('hilight -h rspec') }
+
+    it "is expected to parse the option" do
+      expect(output).to match /Usage: hilight/
+    end
   end
 
   context "with a option flag after the supplied command" do
-    it "is expected to pass the option to the supplied command"
+    let(:subject) { Open3.capture2e('hilight rspec -h') }
+
+    it "is expected to pass the option to the supplied command" do
+      expect(output).to match /rspec/
+    end
   end
 
   describe "optional flags" do
     context "when the flag is -h or --help" do
-      it "is expected to display help"
+      let(:subject) { Open3.capture2e('hilight -h rspec') }
+
+      it "is expected to display help" do
+        expect(output).to match /Usage: hilight/
+      end
     end
   end
 end

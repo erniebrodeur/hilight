@@ -8,21 +8,11 @@ require 'optparse'
 include Hilight #rubocop:disable all
 
 def split_opts(array)
-  return { arguments: [], command: array } unless array.first[0] == '-'
+  cmd_start_index = array.find_index { |e| !e.start_with? "-" }
+  return [[], array] if !cmd_start_index || cmd_start_index.zero?
 
-  end_index = array.find_index { |e| !e.start_with? "-" }
-  { arguments: array[0..end_index - 1], command: array[end_index..-1] }
+  [array[0..cmd_start_index - 1], array[cmd_start_index..-1] ]
 end
-
-options = {}
-OptionParser.new do |opts|
-  opts.banner = "Usage: example.rb [options]"
-
-  opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
-    options[:verbose] = v
-  end
-end.parse(split_opts(ARGV)[:arguments])
-
 
 Hilight::Filter = Struct.new(:cmd, :patterns)
 Hilight::Filter.define_method(:match?) do |string|
@@ -82,8 +72,20 @@ Hilight::Filters.define_method(:exec) do |string|
   exit process.exitstatus
 end
 
-if ARGV.any?
-  filters.exec ARGV.join(' ')
+options = {}
+parser = OptionParser.new do |opts|
+  opts.banner = "Usage: hilight <cmd>"
+
+  opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+    options[:verbose] = v
+  end
+end
+
+arguments, cmd = split_opts ARGV
+parser.parse arguments
+
+if cmd.any?
+  filters.exec cmd.join(' ')
 else
   $stdout << default.transform($stdin.readline) until $stdin.eof?
 end
