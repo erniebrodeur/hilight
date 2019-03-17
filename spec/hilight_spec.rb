@@ -66,7 +66,7 @@ RSpec.describe Hilight do
 
       it { expected_result.to return_a_kind_of String }
 
-      fit "is expected to not have unused ANSI color codes" do
+      it "is expected to not have unused ANSI color codes" do
         expect(subject.call).not_to include Term::ANSIColor.blue+Term::ANSIColor.reset
       end
 
