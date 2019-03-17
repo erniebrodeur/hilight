@@ -123,7 +123,46 @@ patterns => pattern[]
              .transform_stream(IO) (IO)
 
 # major things to do
-# update exe, decide final shape (stdin vs exec list vs ...)
 # remove need for termansi by wiring up my own color lambda's
 # wire up themes via lamdas
 # wire up loading (selective or otherwise) of a set of default hilight's
+
+
+- In here is a capture group generated on the fly (for gsub).
+- Idea being to walk through each match one by one, and if we have something, we just run gsub against it
+- won't be efficent (lots of gsub'ing the same string), but would work without (much) confusion.
+
+regexp.match(input).captures
+ls
+input
+ls String
+ls
+substitution
+regexp.named_captures
+regexp.match(input)
+regexp.match(input).matches
+regexp.match(input).named_captures
+h = regexp.match(input).named_captures
+ls h
+h.dorp
+h.drop
+h.drop nil
+h
+h.reduce
+h.reduce { |k,v| }
+h.reduce { |k,v| k }
+h.reduce { |k,v| v }
+h.reduce { |k,v| v!=nil }
+h.reject { |k,v| v == nil }
+h.reject! { |k,v| v == nil }
+input.gsub
+input.gsub h
+input.gsub h[0], h[1]
+h[0]
+h[1]
+h
+h.first
+h.first[0]
+input.gsub h.first[1], Term::ANSIColor(h.first[0])
+input.gsub h.first[1], Term::ANSIColor.color(h.first[0])
+input.gsub h.first[1], Term::ANSIColor.color(h.first[0], h.first[1])

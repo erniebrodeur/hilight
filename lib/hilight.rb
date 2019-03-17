@@ -11,6 +11,8 @@ Hilight::Pattern = Struct.new :regexp, :substitution
 Hilight::Pattern.define_method(:match?) { |string| regexp.match? string }
 Hilight::Pattern.define_method(:transform) do |input|
   # map our colors in to the matches
+  require 'pry'
+  binding.pry
   regexp.names.map { |n| substitution.gsub!("\\k<#{n}>") { |s| Term::ANSIColor.color(n, s) } }
   # map our input into the output, return the original if it doesn't map (replace) anything.
   input.gsub!(regexp, substitution) || input
@@ -25,4 +27,15 @@ Hilight::Fabric.define_method(:transform) do |input, stop_on_first_match: false|
     return output if stop_on_first_match && pattern.match?(input)
   end
   output
+end
+
+def rr2(r, s, o = StringIO.new)
+  m = r.match s
+  return s unless m
+
+  o << m.pre_match
+  c, ss = m.named_captures.find { |k,v| v!=nil}
+  o << Term::ANSIColor.color(c, ss)
+  rr2(r, m.post_match, o) unless m.post_match.blank?
+  o
 end

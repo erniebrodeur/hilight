@@ -46,8 +46,6 @@ RSpec.describe Hilight do
     it { is_expected.to respond_to(:transform).with(1).arguments }
     it { is_expected.to respond_to(:match?).with(1).arguments }
 
-    Hilight::Pattern.define_method(:transform_stream) { |_io| "" }
-
     describe "#match?" do
       let(:subject) { Hilight::Pattern[regexp, substitution].match? 'string' }
 
@@ -62,8 +60,16 @@ RSpec.describe Hilight do
 
     describe "#transform" do
       let(:subject) { proc { Hilight::Pattern[regexp, substitution].transform string } }
+      let(:regexp) { /(?<green>[A-Z]\w+)|(?<blue>[aeiou]\w+)\b/ }
+      let(:substitution) { '\k<green>\k<blue>' }
+      let(:string) { "a Vowel is Not a Toy.  Or is It." }
 
       it { expected_result.to return_a_kind_of String }
+
+      fit "is expected to not have unused ANSI color codes" do
+        expect(subject.call).not_to include Term::ANSIColor.blue+Term::ANSIColor.reset
+      end
+
       it "is expected to include ANSI color codes" do
         expected_result.to include(Term::ANSIColor.blue)
       end
