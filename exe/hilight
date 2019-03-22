@@ -11,7 +11,7 @@ def split_opts(array)
   cmd_start_index = array.find_index { |e| !e.start_with? "-" }
   return [[], array] if !cmd_start_index || cmd_start_index.zero?
 
-  [array[0..cmd_start_index - 1], array[cmd_start_index..-1] ]
+  [array[0..cmd_start_index - 1], array[cmd_start_index..-1]]
 end
 
 Hilight::Filter = Struct.new(:cmd, :patterns)
@@ -76,7 +76,7 @@ end
 
 arguments, cmd = split_opts ARGV
 parser.parse arguments
-# TODO sort why this pattern /# (?<red>.*):(?<yellow>\d+)/ drops the :
+# TODO: sort why this pattern /# (?<red>.*):(?<yellow>\d+)/ drops the :
 
 if cmd.any?
   filters.exec cmd.join(' ')
