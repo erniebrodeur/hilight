@@ -28,13 +28,6 @@ Hilight::Filters.define_method(:find) do |match|
   collection.find { |f| f.match? match } || collection.find { |e| e.cmd == 'default' }
 end
 
-Hilight::Filters.define_method(:exec) do |string|
-  f = find string
-  output, process = Open3.capture2e(string)
-  puts f.patterns.transform(output)
-  exit process.exitstatus
-end
-
 rspec = Fabric[[
   Pattern[/(?<green>\d+) examples, (?<red>\d+) failures?, (?<yellow>\d+) pending/, '\k<green> examples, \k<red> failures, \k<yellow> pending'],
   Pattern[/(?<blue>\d+\.\d+)/, '\k<blue>'],
@@ -68,7 +61,7 @@ end
 Hilight::Filters.define_method(:exec) do |string|
   f = find string
   output, process = Open3.capture2e(string)
-  puts f.patterns.transform(output)
+  print f.patterns.transform(output).join("")
   exit process.exitstatus
 end
 
@@ -81,66 +74,12 @@ parser = OptionParser.new do |opts|
   end
 end
 
-test_string = "one two three four five six seven"
-test_pattern = Pattern[/(?<yellow>two)|(?<red>\w*o\w*)|(?<green>one)/, '']
-# arguments, cmd = split_opts ARGV
-# parser.parse arguments
+arguments, cmd = split_opts ARGV
+parser.parse arguments
+# TODO sort why this pattern /# (?<red>.*):(?<yellow>\d+)/ drops the :
 
-Hilight::Pattern.define_method(:offsets) do |input|
-  offsets = {}
-  offsets['clear'] = []
-
-  m = regexp.match input
-  processed_characters = 0
-  while m
-    m.named_captures.each do |color, string|
-      next unless string
-
-      # offsets.push [m.begin(color) + processed_characters, m.end(color) + processed_characters, color]
-      offsets[color] ||= []
-      offsets[color].push m.offset(color)[0] + processed_characters
-      offsets['clear'].push m.offset(color)[1] + processed_characters
-    end
-
-    processed_characters += m.size
-    m = regexp.match(m.post_match)
-  end
-  offsets
+if cmd.any?
+  filters.exec cmd.join(' ')
+else
+  $stdout << default.transform($stdin.readline) until $stdin.eof?
 end
-
-Hilight::Pattern.define_method(:transform) do |input|
-  m = regexp.match input
-  output = []
-
-  while m
-    output.push m.pre_match unless m.pre_match.empty?
-
-    m.named_captures.each do |color, string|
-      output.push Term::ANSIColor.color color, string if string
-    end
-
-    post_match = m.post_match
-    m = regexp.match(m.post_match)
-
-    output.push post_match unless m
-  end
-
-  output
-end
-
-
-# offsets = test_pattern.offsets(test_string)
-# puts offsets
-
-require 'pry'
-
-puts test_pattern.transform test_string
-
-binding.pry
-
-
-# if cmd.any?
-#   filters.exec cmd.join(' ')
-# else
-#   $stdout << default.transform($stdin.readline) until $stdin.eof?
-# end
