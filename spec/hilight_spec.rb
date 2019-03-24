@@ -1,13 +1,8 @@
 require 'spec_helper'
 
 RSpec.describe Hilight do
-  let(:expected_result) { expect(subject.call) } #rubocop:disable all
-  let(:regexp) { /(?<green>'.*')|(?<blue>".*")/ }
-  let(:substitution) { '\k<green>\k<blue>' }
-  let(:result) { subject.call }
-  let(:string) { "here is 'an inline comment' and \"another\", with a :symbol" }
-
   it { is_expected.to respond_to(:load).with(1).arguments }
+  it { is_expected.to respond_to(:transform).with(2).arguments }
 
   it "is expected to have a version number" do
     expect(Hilight::VERSION).not_to be nil
@@ -40,61 +35,67 @@ RSpec.describe Hilight do
     end
   end
 
-  describe Hilight::Pattern do
-    it { is_expected.to have_attributes(regexp: a_kind_of(Regexp).or(be_nil)) }
-    it { is_expected.to have_attributes(substitution: a_kind_of(String).or(be_nil)) }
-    it { is_expected.to respond_to(:transform).with(1).arguments }
-    it { is_expected.to respond_to(:match?).with(1).arguments }
+  # puts Pattern[/(?<red>two) three (?<yellow>four)/].transform('one two three four five').join("")
+  # # puts Pattern[/\"(?<green>.*?)\"|\'(?<green>.*?)\'/].transform('a "little" rabbit').join("")
 
-    describe "#match?" do
-      let(:subject) { Hilight::Pattern[regexp, substitution].match? 'string' }
+  fdescribe "#transform" do
+    let(:input) { "one two three four five six" }
+    let(:expected_result) { "one \e[31mtwo\e[0m three \e[34mfour\e[0m five six" }
+    let(:red_pattern) { /(?<red>two)/ }
+    let(:blue_pattern) { /(?<blue>four)/ }
+    let(:patterns) { [red_pattern, blue_pattern] }
+    let(:subject) { described_class.transform(input, patterns) }
 
-      it { is_expected.to return_falsey }
+    before do
+      ::String.define_method(:transformed?) { include? "\e[" }
+    end
 
-      context "when the regexp matches string" do
-        let(:subject) { Hilight::Pattern[regexp, substitution].match? string }
+    it { is_expected.to be_transformed }
 
-        it { is_expected.to return_truthy }
+    it "is expected to union the regexp array" do
+      expect(subject).to eq expected_result
+    end
+
+    context "when the first argument is not a string" do
+      let(:input) { [] }
+
+      it { expect { subject }.to raise_error ArgumentError, /is not a kind of String/}
+    end
+
+    context "when the second argument is not an array" do
+      let(:patterns) { 1 }
+
+      it { expect { subject }.to raise_error ArgumentError, /is not a kind of Array or Regexp/}
+    end
+
+    context "when the second argument is a single regexp" do
+      let(:patterns) { red_pattern }
+      let(:expected_result) { "one \e[31mtwo\e[0m three four five six" }
+
+      it "is expected to treat it as an array" do
+        expect(subject).to eq expected_result
       end
     end
 
-    describe "#transform" do
-      let(:subject) { proc { Hilight::Pattern[regexp, substitution].transform string } }
-      let(:regexp) { /(?<green>[A-Z]\w+)|(?<blue>[aeiou]\w+)\b/ }
-      let(:substitution) { '\k<green>\k<blue>' }
-      let(:string) { "a Vowel is Not a Toy.  Or is It." }
-
-      it { expected_result.to return_a_kind_of String }
-
-      it "is expected to not have unused ANSI color codes" do
-        expect(subject.call).not_to include Term::ANSIColor.blue + Term::ANSIColor.reset
-      end
-
-      it "is expected to include ANSI color codes" do
-        expected_result.to include(Term::ANSIColor.blue)
+    context "when a capture group is matched" do
+      it "is expected to wrap the capture group with ANSI color codes" do
+        expect(subject).to include("\e[31mtwo\e[0m")
       end
     end
-  end
 
-  describe Hilight::Fabric do
-    it { is_expected.to have_attributes(collection: a_kind_of(Array).or(be_nil)) }
-    it { is_expected.to respond_to(:transform).with(1).argument.and_keywords(:stop_on_first_match) }
+    context "when a capture has more than one part" do
+      it "is expected to not lose characters in between the capture groups" do
+        expect(subject).to include(" three ")
+      end
+    end
 
-    describe "#transform" do
-      let(:pattern) { Hilight::Pattern[regexp, substitution] }
-      let(:pattern2) { Hilight::Pattern[/(?<red>:symbol)/, '\k<red>'] }
-      let(:subject) { proc { Hilight::Fabric[[pattern, pattern2]].transform string } }
-
-      it "is expected to call transform on each pattern" do
-        expected_result.to include(Term::ANSIColor.red)
+    context "when a capture has a pre_match or post_match group" do
+      it "is expected to include the pre_match group" do
+        expect(subject).to start_with "one "
       end
 
-      context "when stop_on_first_match is set and the pattern matches" do
-        let(:subject) { proc { Hilight::Fabric[[pattern, pattern2]].transform string, stop_on_first_match: true } }
-
-        it "is expected to skip the rest of the matches" do
-          expected_result.not_to include(Term::ANSIColor.red)
-        end
+      it "is expected to transform the post_match group"  do
+        expect(subject).to include("\e[34mfour\e[0m")
       end
     end
   end

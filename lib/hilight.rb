@@ -1,17 +1,18 @@
 require "hilight/version"
 require 'term/ansicolor'
 
-Hilight::Pattern = Struct.new :regexp, :substitution
-Hilight::Fabric = Struct.new :collection
-
 Hilight.define_singleton_method(:load) do |filename|
   return Kernel.load filename if File.exist? filename
 
   Kernel.load "#{Dir.home}/.config/hilight/patterns/#{filename}"
 end
 
-Hilight::Pattern.define_method(:match?) { |string| regexp.match? string }
-Hilight::Pattern.define_method(:transform) do |input|
+Hilight.define_singleton_method(:transform) do |input, regexps = []|
+  raise ArgumentError, "#{input} is not a kind of String" unless input.is_a? String
+  raise ArgumentError, "#{input} is not a kind of Array or Regexp" unless regexps.is_a?(Array) || regexps.is_a?(Regexp)
+
+  regexp = Regexp.union regexps
+
   match = regexp.match input
   output = []
 
@@ -22,12 +23,12 @@ Hilight::Pattern.define_method(:transform) do |input|
     color_lookup_list = match.named_captures.invert
 
     match.to_a[1..-1].each do |s|
+      next unless s
+
       color = color_lookup_list[s]
-      captured_string.gsub!(s, Term::ANSIColor.color(color, s)) if s
+      captured_string.gsub!(s, Term::ANSIColor.color(color, s))
     end
 
-    # match.named_captures.each do |color, string|
-    # end
     output.push captured_string if captured_string
 
     post_match = match.post_match
@@ -36,9 +37,5 @@ Hilight::Pattern.define_method(:transform) do |input|
     output.push post_match unless match
   end
 
-  output
-end
-
-Hilight::Fabric.define_method(:transform) do |input|
-  Hilight::Pattern[Regexp.union collection.map(&:regexp)].transform input
+  output.join("")
 end
