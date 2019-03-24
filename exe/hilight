@@ -28,17 +28,17 @@ Hilight::Filters.define_method(:find) do |match|
   collection.find { |f| f.match? match } || collection.find { |e| e.cmd == 'default' }
 end
 
-rspec = Fabric[[
-  Pattern[/(?<green>\d+) examples, (?<red>\d+) failures?, (?<yellow>\d+) pending/, '\k<green> examples, \k<red> failures, \k<yellow> pending'],
-  Pattern[/(?<blue>\d+\.\d+)/, '\k<blue>'],
-  Pattern[/\"(?<green>.*?)\"|\'(?<green>.*?)\'/, '\k<green>'],
-  Pattern[/# (?<red>.*):(?<yellow>\d+)/, '\k<red>:\k<yellow>']
-]]
+rspec = [
+  /(?<green>\d+) examples, (?<red>\d+) failures?, (?<yellow>\d+) pending/,
+  /(?<blue>\d+\.\d+)/,
+  /\"(?<green>.*?)\"|\'(?<green>.*?)\'/,
+  /# (?<red>.*):(?<yellow>\d+)/
+]
 
-help = Fabric[[Pattern[/(?<yellow>\B-{1,2}[\w-]+)|(?<blue>[\[\]\(\)\{\}\<\>])|(?<green>["'].*?["'])/, '\k<yellow>\k<blue>\k<green>']]]
-git = Fabric[[Pattern[/(?<green>'.*?')|(?<blue>".*?")/, '\k<green>\k<blue>']]]
-ruby = Fabric[[Pattern[/(.*from |)(?<red>.*):(?<blue>\d+)(?::in )(?<yellow>`.*')/, '\k<red>\k<blue>\k<yellow>']]]
-default = Fabric[[Pattern[/(?<green>\d+\.\d+)|(?<blue>".*")/, '\k<green>\k<blue>']]]
+help = [/(?<yellow>\B-{1,2}[\w-]+)|(?<blue>[\[\]\(\)\{\}\<\>])|(?<green>["'].*?["'])/]
+git = [/(?<green>'.*?')|(?<blue>".*?")/]
+ruby = [/(.*from |)(?<red>.*):(?<blue>\d+)(?::in )(?<yellow>`.*')/]
+default = [/(?<green>\d+\.\d+)|(?<blue>".*")/]
 
 filters = Filters[[
   Filter["rspec", rspec],
@@ -48,24 +48,25 @@ filters = Filters[[
   Filter["default", default]
 ]]
 
-Fabric.define_method(:streaming_exec) do |cmd|
-  Open3.popen3(cmd) do |_stdin, stdout, _stderr, thr|
-    loop do
-      sleep 0.001
-      $stdout << transform(stdout.readpartial(stdout.nread))
-      break unless thr.alive?
-    end
-  end
-end
+# Hilight::Filters.define_method(:streaming_exec) do |cmd|
+#   Open3.popen3(cmd) do |_stdin, stdout, _stderr, thr|
+#     loop do
+#       sleep 0.001
+#       $stdout << transform(stdout.readpartial(stdout.nread))
+#       break unless thr.alive?
+#     end
+#   end
+# end
 
 Hilight::Filters.define_method(:exec) do |string|
   f = find string
   output, process = Open3.capture2e(string)
-  print f.patterns.transform(output).join("")
+  print Hilight.transform output, f[1]
   exit process.exitstatus
 end
 
 options = {}
+
 parser = OptionParser.new do |opts|
   opts.banner = "Usage: hilight <cmd>"
 
