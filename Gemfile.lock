@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    hilight (0.1.1)
+    hilight (0.2.0)
       term-ansicolor
 
 GEM
