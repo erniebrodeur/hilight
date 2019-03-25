@@ -14,8 +14,9 @@ Hilight.define_singleton_method(:transform) do |input, regexps = []|
   regexp = Regexp.union regexps
 
   match = regexp.match input
-  output = []
+  return input unless match
 
+  output = []
   while match
     output.push match.pre_match unless match.pre_match.empty?
 

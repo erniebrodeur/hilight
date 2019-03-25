@@ -13,7 +13,6 @@ def split_opts(array)
   [array[0..cmd_start_index - 1], array[cmd_start_index..-1]]
 end
 
-
 rspec = Fabric['rspec', [
   /(?<green>\d+) examples, (?<red>\d+) failures?, (?<yellow>\d+) pending/,
   /(?<blue>\d+\.\d+)/,
@@ -21,36 +20,12 @@ rspec = Fabric['rspec', [
   /# (?<red>.*):(?<yellow>\d+)/
 ]]
 
+help = Fabric[/-h|--help|help/, /(?<yellow>\B-{1,2}[\w-]+)|(?<blue>[\[\]\(\)\{\}\<\>])|(?<green>["'].*?["'])/]
+git = Fabric["git", /(?<green>'.*?')|(?<blue>".*?")/]
+ruby = Fabric['ruby', /(.*from |)(?<red>.*):(?<blue>\d+)(?::in )(?<yellow>`.*')/]
+default = Fabric['default', /(?<green>\d+\.\d+)|(?<blue>".*")/]
 
-# help = [/(?<yellow>\B-{1,2}[\w-]+)|(?<blue>[\[\]\(\)\{\}\<\>])|(?<green>["'].*?["'])/]
-# git = [/(?<green>'.*?')|(?<blue>".*?")/]
-# ruby = [/(.*from |)(?<red>.*):(?<blue>\d+)(?::in )(?<yellow>`.*')/]
-# default = [/(?<green>\d+\.\d+)|(?<blue>".*")/]
-
-# filters = [
-#   ["rspec", rspec],
-#   [/-h|--help|help/, help],
-#   ["git", git],
-#   ["ruby", ruby],
-#   ["default", default]
-# ]
-
-# Hilight::Filters.define_method(:streaming_exec) do |cmd|
-#   Open3.popen3(cmd) do |_stdin, stdout, _stderr, thr|
-#     loop do
-#       sleep 0.001
-#       $stdout << transform(stdout.readpartial(stdout.nread))
-#       break unless thr.alive?
-#     end
-#   end
-# end
-
-define_method(:exec) do |string|
-  f = find string
-  output, process = Open3.capture2e(string)
-  print Hilight.transform output, f[1]
-  exit process.exitstatus
-end
+fabrics = [rspec, git, ruby, help, default]
 
 options = {}
 
@@ -65,10 +40,16 @@ end
 arguments, cmd = split_opts ARGV
 parser.parse arguments
 
-require 'pry'
-binding.pry
 if cmd.any?
-  filters.exec cmd.join(' ')
+  cmd_string = cmd.join(' ')
+
+  fabric = fabrics.find { |f| f.match? cmd_string }
+  fabric ||= default
+
+  output, process = Open3.capture2e(cmd_string)
+  print fabric.transform output
+
+  exit process.exitstatus
 else
   $stdout << default.transform($stdin.readline) until $stdin.eof?
 end

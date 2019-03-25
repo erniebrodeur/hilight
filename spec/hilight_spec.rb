@@ -77,6 +77,12 @@ RSpec.describe Hilight do
       end
     end
 
+    context "when no capture group is matched" do
+      it "is expected to return the original string" do
+        expect(described_class.transform('seven', patterns)).to eq 'seven'
+      end
+    end
+
     context "when a capture group is matched" do
       it "is expected to wrap the capture group with ANSI color codes" do
         expect(subject).to include("\e[31mtwo\e[0m")
