@@ -38,7 +38,7 @@ RSpec.describe Hilight do
   # puts Pattern[/(?<red>two) three (?<yellow>four)/].transform('one two three four five').join("")
   # # puts Pattern[/\"(?<green>.*?)\"|\'(?<green>.*?)\'/].transform('a "little" rabbit').join("")
 
-  fdescribe "#transform" do
+  describe "#transform" do
     let(:input) { "one two three four five six" }
     let(:expected_result) { "one \e[31mtwo\e[0m three \e[34mfour\e[0m five six" }
     let(:red_pattern) { /(?<red>two)/ }
@@ -59,13 +59,13 @@ RSpec.describe Hilight do
     context "when the first argument is not a string" do
       let(:input) { [] }
 
-      it { expect { subject }.to raise_error ArgumentError, /is not a kind of String/}
+      it { expect { subject }.to raise_error ArgumentError, /is not a kind of String/ }
     end
 
     context "when the second argument is not an array" do
       let(:patterns) { 1 }
 
-      it { expect { subject }.to raise_error ArgumentError, /is not a kind of Array or Regexp/}
+      it { expect { subject }.to raise_error ArgumentError, /is not a kind of Array or Regexp/ }
     end
 
     context "when the second argument is a single regexp" do
@@ -94,9 +94,73 @@ RSpec.describe Hilight do
         expect(subject).to start_with "one "
       end
 
-      it "is expected to transform the post_match group"  do
+      it "is expected to transform the post_match group" do
         expect(subject).to include("\e[34mfour\e[0m")
       end
     end
   end
+
+  describe Hilight::Fabric do
+  let(:fabric) { described_class['test', [/one/]] }
+
+  it { is_expected.to have_attributes(pattern: a_kind_of(String).or(be_nil)) }
+  it { is_expected.to have_attributes(pattern: a_kind_of(Array).or(a_kind_of(Regexp)).or(be_nil)) }
+  it { is_expected.to respond_to(:match?).with(1).arguments }
+  it { is_expected.to respond_to(:transform).with(1).arguments }
+
+  describe "#transform" do
+    it "is expected to call Hilight.transform with the argument and regexps parameter" do
+      allow(Hilight).to receive(:transform).and_call_original
+      fabric.transform('one two three')
+      expect(Hilight).to have_received(:transform).with('one two three', [/one/])
+    end
+  end
+
+  describe "#match?" do
+    let(:subject) { fabric.match? 'not_a_test' }
+
+    it { is_expected.to be false }
+
+    context "when the argument is not a String" do
+      it { expect { fabric.match? 1 }.to raise_error ArgumentError, /is not a kind of String/}
+    end
+
+    context "with a regexp pattern" do
+      let(:pattern) { /test/ }
+      let(:fabric) { described_class[pattern, [/one/]] }
+      let(:subject) { fabric.match? 'test' }
+
+      it { is_expected.to be true }
+
+      it "is expected to test with Regexp.match" do
+        allow(pattern).to receive(:match?).and_call_original
+        subject
+        expect(pattern).to have_received(:match?)
+      end
+    end
+
+    context "with a symbol pattern" do
+      let(:fabric) { described_class[:test, [/one/]] }
+      let(:subject) { fabric.match? 'test' }
+
+      it "is expected to treat it like a string" do
+        expect(subject).to be true
+      end
+    end
+
+    context "with a string pattern" do
+      let(:pattern) { 'test' }
+      let(:fabric) { described_class[pattern, [/one/]] }
+      let(:subject) { fabric.match? 'test' }
+
+      it { is_expected.to be true }
+
+      it "is expected to test equality" do
+        allow(pattern).to receive(:==).and_call_original
+        subject
+        expect(pattern).to have_received(:==)
+      end
+    end
+  end
+end
 end
