@@ -39,6 +39,32 @@ end
 arguments, cmd = split_opts ARGV
 parser.parse arguments
 
+rspec = Quilt[
+  Fabric[
+    'rspec', [
+      /(?<test_count>\d+) examples, (?<test_failures>\d+) failures?, (?<test_pending>\d+) pending/,
+      /"(?<comment>.*?)"/,
+      /'(?<comment>.*?)'/,
+      /# (?<line>.*):(?<line_number>\d+)/
+    ]
+  ],
+  Pattern[
+    [
+      Pair['comment', 32],
+      Pair['test_count', 32],
+      Pair['test_failures', 31],
+      Pair['test_pending', 33],
+      Pair['line', 36],
+      Pair['line_number', 36]
+    ]
+  ]
+]
+
+require 'pry'
+binding.pry
+
+exit
+
 ### Execution
 if cmd.any?
   cmd_string = cmd.join(' ')

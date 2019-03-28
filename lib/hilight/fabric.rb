@@ -1,6 +1,8 @@
-module Hilight
-  Fabric = Struct.new :pattern, :regexps
-  Fabric.define_method(:match?) do |string|
+class Hilight::Fabric
+  attr_accessor :regexps
+  attr_accessor :pattern
+
+  def match?(string)
     raise ArgumentError, "#{string} is not a kind of String" unless string.is_a? String
 
     case pattern
@@ -11,7 +13,11 @@ module Hilight
     end
   end
 
-  Fabric.define_method(:transform) do |string|
+  def transform(string)
     Hilight.transform string, regexps
+  end
+
+  def to_h
+    { pattern: pattern, regexps: regexps.map(&:to_s) }
   end
 end
