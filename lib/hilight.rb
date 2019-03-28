@@ -1,7 +1,5 @@
-require 'creatable'
-require 'oj'
-
 require 'hilight/fabric'
+require 'hilight/pattern'
 require 'hilight/quilt'
 require "hilight/version"
 

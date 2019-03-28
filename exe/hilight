@@ -6,19 +6,6 @@ require 'optparse'
 
 include Hilight #rubocop:disable all
 
-### Fabrics
-rspec = Fabric['rspec', [
-  /(?<green>\d+) examples, (?<red>\d+) failures?, (?<yellow>\d+) pending/,
-  /(?<blue>\d+\.\d+)/,
-  /\"(?<green>.*?)\"|\'(?<green>.*?)\'/,
-  /# (?<red>.*):(?<yellow>\d+)/
-]]
-help = Fabric[/-h|--help|help/, /(?<yellow>\B-{1,2}[\w-]+)|(?<blue>[\[\]\(\)\{\}\<\>])|(?<green>["'].*?["'])/]
-git = Fabric["git", /(?<green>'.*?')|(?<blue>".*?")/]
-ruby = Fabric['ruby', /(.*from |)(?<red>.*):(?<blue>\d+)(?::in )(?<yellow>`.*')/]
-default = Fabric['default', /(?<green>\d+\.\d+)|(?<blue>".*")/]
-fabrics = [rspec, git, ruby, help, default]
-
 ### Parsing
 options = {}
 parser = OptionParser.new do |opts|
@@ -39,41 +26,48 @@ end
 arguments, cmd = split_opts ARGV
 parser.parse arguments
 
-rspec = Quilt[
-  Fabric[
-    'rspec', [
-      /(?<test_count>\d+) examples, (?<test_failures>\d+) failures?, (?<test_pending>\d+) pending/,
-      /"(?<comment>.*?)"/,
-      /'(?<comment>.*?)'/,
-      /# (?<line>.*):(?<line_number>\d+)/
+default = Quilt.create_from_hash({
+  "fabric":  {
+    "pattern": "rspec",
+    "regexps": [
+      "(?-mix:(?<test_count>\\d+) examples, (?<test_failures>\\d+) failures?, (?<test_pending>\\d+) pending)",
+      "(?-mix:\"(?<comment>.*?)\")",
+      "(?-mix:'(?<comment>.*?)')",
+      "(?-mix:# (?<line>.*):(?<line_number>\\d+))"
     ]
-  ],
-  Pattern[
-    [
-      Pair['comment', 32],
-      Pair['test_count', 32],
-      Pair['test_failures', 31],
-      Pair['test_pending', 33],
-      Pair['line', 36],
-      Pair['line_number', 36]
-    ]
-  ]
-]
+  },
+  "pattern": {
+    "comment":       32,
+    "test_count":    32,
+    "test_failures": 31,
+    "test_pending":  33,
+    "line":          36,
+    "line_number":   36
+  }
+})
 
-require 'pry'
-binding.pry
-
-exit
+# rspec = Fabric['rspec', [
+#   /(?<green>\d+) examples, (?<red>\d+) failures?, (?<yellow>\d+) pending/,
+#   /(?<blue>\d+\.\d+)/,
+#   /\"(?<green>.*?)\"|\'(?<green>.*?)\'/,
+#   /# (?<red>.*):(?<yellow>\d+)/
+# ]]
+# help = Fabric[/-h|--help|help/, /(?<yellow>\B-{1,2}[\w-]+)|(?<blue>[\[\]\(\)\{\}\<\>])|(?<green>["'].*?["'])/]
+# git = Fabric["git", /(?<green>'.*?')|(?<blue>".*?")/]
+# ruby = Fabric['ruby', /(.*from |)(?<red>.*):(?<blue>\d+)(?::in )(?<yellow>`.*')/]
+# default = Fabric['default', /(?<green>\d+\.\d+)|(?<blue>".*")/]
+# fabrics = [rspec, git, ruby, help, default]
+fabrics = []
 
 ### Execution
 if cmd.any?
   cmd_string = cmd.join(' ')
 
-  fabric = fabrics.find { |f| f.match? cmd_string }
-  fabric ||= default
+  quilt = fabrics.find { |quilt| quilt.match? cmd_string }
+  quilt ||= default
 
   output, process = Open3.capture2e(cmd_string)
-  print fabric.transform output
+  print quilt.transform output
 
   exit process.exitstatus
 else
