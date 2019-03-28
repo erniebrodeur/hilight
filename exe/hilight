@@ -1,34 +1,26 @@
 #!/usr/bin/env ruby
 
 require "hilight"
-require 'term/ansicolor'
 require 'open3'
 require 'optparse'
 
 include Hilight #rubocop:disable all
-def split_opts(array)
-  cmd_start_index = array.find_index { |e| !e.start_with? "-" }
-  return [[], array] if !cmd_start_index || cmd_start_index.zero?
 
-  [array[0..cmd_start_index - 1], array[cmd_start_index..-1]]
-end
-
+### Fabrics
 rspec = Fabric['rspec', [
   /(?<green>\d+) examples, (?<red>\d+) failures?, (?<yellow>\d+) pending/,
   /(?<blue>\d+\.\d+)/,
   /\"(?<green>.*?)\"|\'(?<green>.*?)\'/,
   /# (?<red>.*):(?<yellow>\d+)/
 ]]
-
 help = Fabric[/-h|--help|help/, /(?<yellow>\B-{1,2}[\w-]+)|(?<blue>[\[\]\(\)\{\}\<\>])|(?<green>["'].*?["'])/]
 git = Fabric["git", /(?<green>'.*?')|(?<blue>".*?")/]
 ruby = Fabric['ruby', /(.*from |)(?<red>.*):(?<blue>\d+)(?::in )(?<yellow>`.*')/]
 default = Fabric['default', /(?<green>\d+\.\d+)|(?<blue>".*")/]
-
 fabrics = [rspec, git, ruby, help, default]
 
+### Parsing
 options = {}
-
 parser = OptionParser.new do |opts|
   opts.banner = "Usage: hilight <cmd>"
 
@@ -37,9 +29,17 @@ parser = OptionParser.new do |opts|
   end
 end
 
+def split_opts(array)
+  cmd_start_index = array.find_index { |e| !e.start_with? "-" }
+  return [[], array] if !cmd_start_index || cmd_start_index.zero?
+
+  [array[0..cmd_start_index - 1], array[cmd_start_index..-1]]
+end
+
 arguments, cmd = split_opts ARGV
 parser.parse arguments
 
+### Execution
 if cmd.any?
   cmd_string = cmd.join(' ')
 

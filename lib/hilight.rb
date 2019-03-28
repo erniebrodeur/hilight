@@ -1,58 +1,55 @@
 require "hilight/version"
-require 'term/ansicolor'
+require 'hilight/fabric'
 
-Hilight.define_singleton_method(:load) do |filename|
-  return Kernel.load filename if File.exist? filename
+module Hilight
+  module_function
 
-  Kernel.load "#{Dir.home}/.config/hilight/patterns/#{filename}"
-end
+  define_method(:black)   { |s| "\e[30m" + s.to_s + "\e[0m" }
+  define_method(:red)     { |s| "\e[31m" + s.to_s + "\e[0m" }
+  define_method(:green)   { |s| "\e[32m" + s.to_s + "\e[0m" }
+  define_method(:yellow)  { |s| "\e[33m" + s.to_s + "\e[0m" }
+  define_method(:blue)    { |s| "\e[34m" + s.to_s + "\e[0m" }
+  define_method(:magenta) { |s| "\e[35m" + s.to_s + "\e[0m" }
+  define_method(:cyan)    { |s| "\e[36m" + s.to_s + "\e[0m" }
+  define_method(:white)   { |s| "\e[37m" + s.to_s + "\e[0m" }
 
-Hilight.define_singleton_method(:transform) do |input, regexps = []|
-  raise ArgumentError, "#{input} is not a kind of String" unless input.is_a? String
-  raise ArgumentError, "#{input} is not a kind of Array or Regexp" unless regexps.is_a?(Array) || regexps.is_a?(Regexp)
+  def load(filename)
+    return Kernel.load filename if File.exist? filename
 
-  regexp = Regexp.union regexps
+    Kernel.load "#{Dir.home}/.config/hilight/patterns/#{filename}"
+  end
 
-  match = regexp.match input
-  return input unless match
+  def transform(input, regexps = [])
+    raise ArgumentError, "#{input} is not a kind of String" unless input.is_a? String
+    raise ArgumentError, "#{input} is not a kind of Array or Regexp" unless regexps.is_a?(Array) || regexps.is_a?(Regexp)
 
-  output = []
-  while match
-    output.push match.pre_match unless match.pre_match.empty?
+    regexp = Regexp.union regexps
 
-    captured_string = match.to_a[0]
-    color_lookup_list = match.named_captures.invert
+    match = regexp.match input
+    return input unless match
 
-    match.to_a[1..-1].each do |s|
-      next unless s
+    output = []
+    while match
+      output.push match.pre_match unless match.pre_match.empty?
 
-      color = color_lookup_list[s]
-      captured_string.gsub!(s, Term::ANSIColor.color(color, s))
+      captured_string = match.to_a[0]
+      color_lookup_list = match.named_captures.invert
+
+      match.to_a[1..-1].each do |s|
+        next unless s
+
+        color = color_lookup_list[s]
+        captured_string.gsub!(s, Hilight.send(color, s))
+      end
+
+      output.push captured_string if captured_string
+
+      post_match = match.post_match
+      match = regexp.match(match.post_match)
+
+      output.push post_match unless match
     end
 
-    output.push captured_string if captured_string
-
-    post_match = match.post_match
-    match = regexp.match(match.post_match)
-
-    output.push post_match unless match
+    output.join("")
   end
-
-  output.join("")
-end
-
-Hilight::Fabric = Struct.new :pattern, :regexps
-Hilight::Fabric.define_method(:match?) do |string|
-  raise ArgumentError, "#{string} is not a kind of String" unless string.is_a? String
-
-  case pattern
-  when Symbol then (pattern.to_s == string)
-  when String then (pattern == string)
-  when Regexp then (pattern.match? string.to_s)
-  else false
-  end
-end
-
-Hilight::Fabric.define_method(:transform) do |string|
-  Hilight.transform string, regexps
 end
