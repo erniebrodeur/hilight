@@ -6,7 +6,7 @@ class Hilight::Pattern
   end
 
   def define_methods
-    pairs.each { |pair| Hilight.define_singleton_method(pair.verb) { |s| "\e[#{pair.code}m#{s}\e[0m" } }
+    pairs.each { |pair| Hilight.define_singleton_method(pair.verb) { |s| "\e[#{pair.code}m#{s}\e[39;49m" } }
   end
 
   def to_h

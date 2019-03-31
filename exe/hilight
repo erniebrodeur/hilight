@@ -26,26 +26,27 @@ end
 arguments, cmd = split_opts ARGV
 parser.parse arguments
 
-default = Quilt.create_from_hash({
+default = Quilt.create_from_hash(
   "fabric":  {
     "pattern": "rspec",
     "regexps": [
       "(?-mix:(?<test_count>\\d+) examples, (?<test_failures>\\d+) failures?, (?<test_pending>\\d+) pending)",
-      "(?-mix:\"(?<comment>.*?)\")",
-      "(?-mix:'(?<comment>.*?)')",
+      "(?-mix:\"(?<string>.*?)\")",
+      "(?-mix:'(?<string>.*?)')",
       "(?-mix:# (?<line>.*):(?<line_number>\\d+))"
     ]
   },
   "pattern": {
-    "comment":       32,
-    "test_count":    32,
-    "test_failures": 31,
-    "test_pending":  33,
-    "line":          36,
-    "line_number":   36
+    "string":        '38;2;229;92;7',
+    "test_count":    '32',
+    "test_failures": '31',
+    "test_pending":  '33',
+    "line":          '36',
+    "line_number":   '38;2;100;100;100'
   }
-})
+)
 
+# 38;2;<r>;<g>;<b>
 # rspec = Fabric['rspec', [
 #   /(?<green>\d+) examples, (?<red>\d+) failures?, (?<yellow>\d+) pending/,
 #   /(?<blue>\d+\.\d+)/,
@@ -73,3 +74,58 @@ if cmd.any?
 else
   $stdout << default.transform($stdin.readline) until $stdin.eof?
 end
+
+# Monokai colors, for later.
+{
+  "Comment"                      => "103;118;247",
+  "String"                       => "229;92;7",
+  "js template-expression"       => "198;103;141",
+  "TemplateString"               => "171;187;43",
+  "Number"                       => "198;103;141",
+  "Embeded String Begin and End" => "198;103;141",
+  "Embeded String"               => "152;140;55",
+  "Built-in constant"            => "86;107;108",
+  "User-defined constant"        => "86;107;108",
+  "Language Variable"            => "224;6;199",
+  "Variable"                     => "97;26;254",
+  "Keyword"                      => "224;6;199",
+  "Keyword Operator"             => "224;6;199",
+  "Storage"                      => "224;6;199",
+  "Storage type"                 => "86;107;108",
+  "Class name"                   => "97;26;254",
+  "Variable Object"              => "97;26;254",
+  "Other variable"               => "171;187;43",
+  "Inherited class"              => "152;140;55",
+  "Function name"                => "152;140;55",
+  "Function argument"            => "209;25;166",
+  "Function call"                => "171;187;43",
+  "Builtin Functions"            => "152;140;55",
+  "Tag name"                     => "224;6;199",
+  "Tag Class and ID"             => "86;107;108",
+  "Tag attribute"                => "152;140;55",
+  "Library constant"             => "86;107;108",
+  "Library class/type"           => "86;107;108",
+  "Json Property"                => "86;107;108",
+  "StyleSheet Property name"     => "171;187;43",
+  "StyleSheet Property value"    => "152;140;55",
+  "StyleSheet Variable"          => "86;107;108",
+  "StyleSheet Variable String"   => "229;92;7",
+  "StyleSheet Unit"              => "198;103;141",
+  "StyleSheet Function"          => "86;107;108",
+  "Invalid"                      => "248;143;143",
+  "Invalid deprecated"           => "248;143;143",
+  "JSON String"                  => "86;107;108",
+  "Link"                         => "97;26;254",
+  "diff.header"                  => "117;87;21",
+  "diff.deleted"                 => "198;103;141",
+  "diff.inserted"                => "229;92;7",
+  "diff.changed"                 => "229;92;7",
+  "Markup: Emphasis Punctuation" => "105;150;150",
+  "Markdown: Link"               => "97;26;254",
+  "Markdown: Bold Punctuation"   => "105;150;150",
+  "Markdown: Heading"            => "105;150;150",
+  "Markdown: Quote"              => "152;140;55",
+  "Markdown: Separator"          => "198;103;141",
+  "Markdown: Raw"                => "86;107;108",
+  "Markdown: List Punctuation"   => "255;255;255"
+}

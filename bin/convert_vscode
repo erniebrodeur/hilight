@@ -1,0 +1,15 @@
+#!/usr/env/bin ruby
+require 'pry'
+require 'oj'
+
+c = File.read ARGV[0]
+h = Oj.load c
+colors = h['tokenColors']
+colors.map { |e| [e['name'], e['settings']['foreground']] }.to_h
+monokai_hex_colors = colors.map { |e| [e['name'], e['settings']['foreground']] }.to_h
+monokai_hex_colors.delete_if { |k, v| k.nil? || v.nil? }
+
+String.define_method(:to_rgb) { [self[1..2], self[2..3], self[4..5]].map { |s| s.to_i(16) }.join(";") }
+output = monokai_hex_colors.map { |k,v| [k,v.to_rgb] }.to_h
+
+puts Oj.dump output, indent: 2
