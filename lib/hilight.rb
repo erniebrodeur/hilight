@@ -17,12 +17,6 @@ module Hilight
   define_method(:cyan)    { |s| "\e[36m" + s.to_s + "\e[0m" }
   define_method(:white)   { |s| "\e[37m" + s.to_s + "\e[0m" }
 
-  def load(filename)
-    return Kernel.load filename if File.exist? filename
-
-    Kernel.load "#{Dir.home}/.config/hilight/patterns/#{filename}"
-  end
-
   def transform(input, regexps = [])
     raise ArgumentError, "#{input} is not a kind of String" unless input.is_a? String
     raise ArgumentError, "#{input} is not a kind of Array or Regexp" unless regexps.is_a?(Array) || regexps.is_a?(Regexp)
@@ -55,5 +49,11 @@ module Hilight
     end
 
     output.join("")
+  end
+
+  def gem_dir
+    return Dir.pwd unless Gem.loaded_specs.include? 'hilight'
+
+    Gem.loaded_specs['hilight'].full_gem_path
   end
 end

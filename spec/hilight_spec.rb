@@ -1,11 +1,19 @@
 require 'spec_helper'
 
 RSpec.describe Hilight do
-  it { is_expected.to respond_to(:load).with(1).arguments }
   it { is_expected.to respond_to(:transform).with(2).arguments }
 
   it "is expected to have a version number" do
     expect(Hilight::VERSION).not_to be nil
+  end
+
+  describe "Basic Color Methods" do
+    colors = %i[black red green yellow blue magenta cyan white]
+
+    colors.each do |color|
+      it { is_expected.to respond_to(color).with(1).arguments }
+      it { expect(described_class.send(color, 'test')).to return_a_kind_of(String) }
+    end
   end
 
   describe "#transform" do
@@ -74,5 +82,12 @@ RSpec.describe Hilight do
         expect(subject).to include("\e[34mfour\e[0m")
       end
     end
+  end
+
+  describe Hilight::Pair do
+    let(:subject) { Hilight::Pair['test', '31'] }
+
+    it { is_expected.to have_attributes(verb: a_kind_of(String)) }
+    it { is_expected.to have_attributes(code: a_kind_of(String)) }
   end
 end
