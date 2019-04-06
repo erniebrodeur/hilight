@@ -17,33 +17,40 @@ module Hilight
   define_method(:cyan)    { |s| "\e[36m" + s.to_s + "\e[0m" }
   define_method(:white)   { |s| "\e[37m" + s.to_s + "\e[0m" }
 
-  def transform(input, regexps = [])
+  def replace_colors(match)
+    output = match.to_a[0]
+    color_lookup_list = match.named_captures.invert
+
+    match.to_a[1..-1].each do |s|
+      next unless s
+
+      output.gsub!(s, Hilight.send(color_lookup_list[s], s))
+    end
+
+    output
+  end
+
+  def raise_or_continue(input, regexps)
     raise ArgumentError, "#{input} is not a kind of String" unless input.is_a? String
     raise ArgumentError, "#{input} is not a kind of Array or Regexp" unless regexps.is_a?(Array) || regexps.is_a?(Regexp)
+  end
 
-    regexp = Regexp.union regexps
+  def transform(input, regexps = [])
+    raise_or_continue input, regexps
+    unioned_regexp = regexps.is_a?(Array) ? Regexp.union(regexps) : regexps
 
-    match = regexp.match input
+    match = unioned_regexp.match input
     return input unless match
 
     output = []
     while match
       output.push match.pre_match unless match.pre_match.empty?
 
-      captured_string = match.to_a[0]
-      color_lookup_list = match.named_captures.invert
-
-      match.to_a[1..-1].each do |s|
-        next unless s
-
-        color = color_lookup_list[s]
-        captured_string.gsub!(s, Hilight.send(color, s))
-      end
-
+      captured_string = replace_colors match
       output.push captured_string if captured_string
 
       post_match = match.post_match
-      match = regexp.match(match.post_match)
+      match = unioned_regexp.match(match.post_match)
 
       output.push post_match unless match
     end
