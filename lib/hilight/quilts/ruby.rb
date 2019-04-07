@@ -8,7 +8,7 @@ module Hilight
           /'(?<string>.*?)'/
         ]
       },
-      'pattern' => { "string" => "31", "comment" => "32" }
+      'pattern' => { "string" => "33", "comment" => "32" }
     )
   end
 end
