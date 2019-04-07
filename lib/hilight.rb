@@ -1,12 +1,16 @@
 require 'hilight/fabric'
+require 'hilight/pair'
 require 'hilight/pattern'
 require 'hilight/quilt'
-require "hilight/version"
+require 'hilight/quilts'
+require 'hilight/quilts/default'
+require 'hilight/quilts/help'
+require 'hilight/quilts/rspec'
+require 'hilight/quilts/ruby'
+require 'hilight/version'
 
 module Hilight
   module_function
-
-  Pair = Struct.new :verb, :code
 
   define_method(:black)   { |s| "\e[30m" + s.to_s + "\e[0m" }
   define_method(:red)     { |s| "\e[31m" + s.to_s + "\e[0m" }

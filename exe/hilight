@@ -27,11 +27,7 @@ end
 arguments, cmd = split_opts ARGV
 parser.parse arguments
 
-### Load quilts
-default = Quilt.load_from_gem 'default'
-help = Quilt.load_from_gem 'help'
-rspec = Quilt.load_from_gem 'rspec'
-fabrics = [help, rspec, default]
+fabrics = Hilight::Quilts.constants.map { |c| Hilight::Quilts.const_get c }
 
 ### Execution
 if cmd.any?

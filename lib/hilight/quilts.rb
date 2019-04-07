@@ -1,0 +1,2 @@
+module Hilight::Quilts
+end
