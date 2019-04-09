@@ -1,38 +1,39 @@
 # Hilight
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/hilight`. To experiment with that code, run `bin/console` for an interactive prompt.
+Hilight will highlight CLI based applications based on regular expressions.
 
-TODO: Delete this and the text above, and describe your gem
+Ever wanted colors in an app that doesn't support them?
+
+    hilight git -h
+
+- Supports regexp for the command, as well as strings.
+- No outside dependencies.
+- Can add syntaxes via serializable JSON or ruby.
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'hilight'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install hilight
+    gem install hilight
 
 ## Usage
 
-TODO: Write usage instructions here
+Basic highlighting can be done with:
 
-## Development
+    hilight command
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+It can be used in a piped expression.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+    git -h | hilight
 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/erniebrodeur/hilight. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+
+## Pull Requests
+
+Pull requests that do not pass current rspecs or do not contain coverage of the code in the pull request are, most likely, going to be rejected.
+
+If you want to add a theme/change an existing one, please submit all updates
+in the JSON form of the quilt.
 
 ## Code of Conduct
 
