@@ -4,17 +4,9 @@ gemspec
 
 group :development do
   gem 'bump'
-  gem "bundler"
-  gem "rake"
-  gem "rspec"
-  gem 'rubocop'
-  gem 'rubocop-rspec'
 end
 
 group :development, optional: true do
-  gem 'simplecov'
-  gem 'simplecov-console'
-  gem 'yard'
   gem 'guard'
   gem 'guard-bundler'
   gem 'guard-rspec'
@@ -24,12 +16,14 @@ group :development, optional: true do
   gem 'oj'
   gem 'pry'
   gem 'pry-debundle'
+  gem 'simplecov'
+  gem 'simplecov-console'
   gem 'solargraph'
+  gem 'yard'
 end
 
 group :test do
   gem "bundler"
-  gem "rake"
   gem "rspec"
   gem 'rubocop'
   gem 'rubocop-rspec'
