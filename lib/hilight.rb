@@ -8,6 +8,7 @@ require 'hilight/quilts/rspec'
 require 'hilight/quilts/ruby'
 require 'hilight/version'
 
+# Hilight API.
 module Hilight
   module_function
 
@@ -20,6 +21,17 @@ module Hilight
   define_method(:cyan)    { |s| "\e[36m" + s.to_s + "\e[0m" }
   define_method(:white)   { |s| "\e[37m" + s.to_s + "\e[0m" }
 
+  def gem_dir
+    return Dir.pwd unless Gem.loaded_specs.include? 'hilight'
+
+    Gem.loaded_specs['hilight'].full_gem_path
+  end
+
+  def raise_or_continue(input, regexps)
+    raise ArgumentError, "#{input} is not a kind of String" unless input.is_a? String
+    raise ArgumentError, "#{input} is not a kind of Array or Regexp" unless regexps.is_a?(Array) || regexps.is_a?(Regexp)
+  end
+
   def replace_colors(match)
     output = match.to_a[0]
     color_lookup_list = match.named_captures.invert
@@ -31,11 +43,6 @@ module Hilight
     end
 
     output
-  end
-
-  def raise_or_continue(input, regexps)
-    raise ArgumentError, "#{input} is not a kind of String" unless input.is_a? String
-    raise ArgumentError, "#{input} is not a kind of Array or Regexp" unless regexps.is_a?(Array) || regexps.is_a?(Regexp)
   end
 
   def transform(input, regexps = [])
@@ -59,11 +66,5 @@ module Hilight
     end
 
     output.join("")
-  end
-
-  def gem_dir
-    return Dir.pwd unless Gem.loaded_specs.include? 'hilight'
-
-    Gem.loaded_specs['hilight'].full_gem_path
   end
 end

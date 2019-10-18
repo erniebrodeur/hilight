@@ -31,9 +31,7 @@ module Hilight
 
     def self.load_from_gem(name)
       create_from_hash(
-        JSON.parse(
-          File.read("#{gem_dir}/data/quilts/#{name}_quilt.json")
-        )
+        JSON.parse(File.read("#{gem_dir}/data/quilts/#{name}_quilt.json"))
       )
     end
   end
