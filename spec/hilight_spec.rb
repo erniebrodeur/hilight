@@ -85,7 +85,7 @@ RSpec.describe Hilight do
   end
 
   describe Hilight::Pair do
-    let(:subject) { Hilight::Pair['test', '31'] }
+    let(:subject) { described_class['test', '31'] }
 
     it { is_expected.to have_attributes(verb: a_kind_of(String)) }
     it { is_expected.to have_attributes(code: a_kind_of(String)) }

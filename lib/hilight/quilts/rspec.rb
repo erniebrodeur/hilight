@@ -4,10 +4,10 @@ module Hilight
       "fabric"  => {
         "match_pattern" => "rspec",
         "regexps"       => [
-          "(?-mix:(?<test_count>\\d+) examples, (?<test_failures>\\d+) failures?, (?<test_pending>\\d+) pending)",
-          "(?-mix:\"(?<string>.*?)\")",
-          "(?-mix:'(?<string>.*?)')",
-          "(?-mix:# (?<line>.*):(?<line_number>\\d+))"
+          /(?<test_count>\\d+) examples, (?<test_failures>\\d+) failures?, (?<test_pending>\\d+) pending/,
+          /\"(?<string>.*?)\"/,
+          /'(?<string>.*?)'/,
+          /# (?<line>.*):(?<line_number>\\d+)/
         ]
       },
       "pattern" => {

@@ -4,7 +4,7 @@ module Hilight
       "fabric"  => {
         "match_pattern" => "(?-mix:-h|--help|help)",
         "regexps"       => [
-          "(?-mix:(?<argument>\\B-{1,2}[\\w-]+)|(?<boundary>[\\[\\]\\(\\)\\{\\}\\<\\>])|(?<string>[\"'].*?[\"']))"
+          /(?<argument>\B-{1,2}[\w-]+)|(?<boundary>[\[\]\(\)\{\}\<\>])|(?<string>["'].*?["'])/
         ]
       },
       "pattern" => {

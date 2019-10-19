@@ -29,6 +29,12 @@ module Hilight
       )
     end
 
+    def self.load_from_ruby_file(filename)
+      raise "#{filename} does not exist" unless File.exist? filename
+
+      create_from_hash eval File.read(filename)
+    end
+
     def self.load_from_gem(name)
       create_from_hash(
         JSON.parse(File.read("#{gem_dir}/data/quilts/#{name}_quilt.json"))
