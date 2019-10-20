@@ -1,12 +1,11 @@
+require 'creatable'
+
 require 'hilight/fabric'
 require 'hilight/pair'
 require 'hilight/pattern'
 require 'hilight/quilt'
 require 'hilight/quilts'
 require 'hilight/quilts/default'
-require 'hilight/quilts/help'
-require 'hilight/quilts/rspec'
-require 'hilight/quilts/ruby'
 require 'hilight/version'
 
 # Hilight API.

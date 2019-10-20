@@ -23,9 +23,9 @@ module Hilight
 
     def self.create_from_hash(hash = {})
       new(
-        Fabric.new(Regexp.new(hash['fabric']['match_pattern']), hash['fabric']['regexps']
+        Fabric.new(Regexp.new(hash[:fabric][:match_pattern]), hash[:fabric][:regexps]
           .map { |r| Regexp.new r }),
-        Pattern.new(hash['pattern'].map { |k, v| Pair[k.to_s, v] })
+        Pattern.new(hash[:pattern].map { |k, v| Pair[k.to_s, v] })
       )
     end
 

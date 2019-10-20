@@ -19,11 +19,11 @@ RSpec.describe Hilight::Quilt do
     let(:filename) { 'filename' }
     let(:content) do
       '{
-        "fabric"  => {
-          "match_pattern" => "help",
-          "regexps"       => [/<?argument>.*/]
+        fabric: {
+          match_pattern: "help",
+          regexps: [/<?argument>.*/]
         },
-        "pattern" => {        "argument" => "33"      }
+        pattern: { argument: "33" }
        }'
     end
 

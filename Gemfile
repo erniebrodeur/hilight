@@ -2,6 +2,8 @@ source 'https://rubygems.org'
 
 gemspec
 
+gem 'creatable'
+
 group :development do
   gem 'bump'
 end
