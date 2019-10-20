@@ -5,7 +5,6 @@ require 'hilight/pair'
 require 'hilight/pattern'
 require 'hilight/quilt'
 require 'hilight/quilts'
-require 'hilight/quilts/default'
 require 'hilight/version'
 
 # Hilight API.
