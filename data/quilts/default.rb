@@ -1,6 +1,6 @@
 {
   fabric:  {
-    match_pattern: "default",
+    match_pattern: "--help",
     regexps:       [
       /(?<argument>\\B-{1,2}[\\w-]+)|(?<boundary>[\\[\\]\\(\\)\\{\\}\\<\\>])|(?<string>[\"'].*?[\"'])/
     ]

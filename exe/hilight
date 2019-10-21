@@ -6,6 +6,7 @@ require 'open3'
 require 'optparse'
 
 include Hilight #rubocop:disable all
+Quilts.load_quilts_from_gem
 
 ### Parsing
 options = {}
@@ -43,5 +44,6 @@ if cmd.any?
 
   exit process.exitstatus
 else
-  $stdout << default.transform($stdin.readline) until $stdin.eof?
+  quilt = Hilight::Quilts.collection.first
+  $stdout << quilt.transform($stdin.readline) until $stdin.eof?
 end
