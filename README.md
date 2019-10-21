@@ -8,7 +8,7 @@ Ever wanted colors in an app that doesn't support them?
 
 - Supports regexp for the command, as well as strings.
 - No outside dependencies.
-- Can add syntaxes via serializable JSON or ruby.
+- Can add syntaxes for any application.
 
 ## Installation
 

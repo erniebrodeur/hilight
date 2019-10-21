@@ -1,4 +1,5 @@
 module Hilight
+  # class to contain the fabric and pattern that makes a final hilight.
   class Quilt
     attr_accessor :fabric
     attr_accessor :pattern
@@ -32,7 +33,7 @@ module Hilight
     def self.load_from_ruby_file(filename)
       raise "#{filename} does not exist" unless File.exist? filename
 
-      create_from_hash eval File.read(filename)
+      create_from_hash eval File.read(filename) # rubocop: disable Security/Eval
     end
   end
 end

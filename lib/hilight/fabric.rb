@@ -1,4 +1,5 @@
 module Hilight
+  # class to contain the regexps and pattern to match against.
   class Fabric
     attr_accessor :regexps
     attr_accessor :match_pattern

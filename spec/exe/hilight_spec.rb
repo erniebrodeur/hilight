@@ -23,7 +23,7 @@ RSpec.describe "exe/hilight" do # rubocop: disable RSpec/DescribeClass
     let(:subject) { Open3.capture2e('hilight -h rspec') }
 
     it "is expected to parse the option" do
-      expect(output).to match /Usage: hilight/
+      expect(output).to match(/Usage: hilight/)
     end
   end
 
@@ -31,7 +31,7 @@ RSpec.describe "exe/hilight" do # rubocop: disable RSpec/DescribeClass
     let(:subject) { Open3.capture2e('hilight rspec -h') }
 
     it "is expected to pass the option to the supplied command" do
-      expect(output).to match /rspec/
+      expect(output).to match(/rspec/)
     end
   end
 
@@ -40,7 +40,7 @@ RSpec.describe "exe/hilight" do # rubocop: disable RSpec/DescribeClass
       let(:subject) { Open3.capture2e('hilight -h rspec') }
 
       it "is expected to display help" do
-        expect(output).to match /Usage: hilight/
+        expect(output).to match(/Usage: hilight/)
       end
     end
   end
