@@ -27,17 +27,19 @@ end
 arguments, cmd = split_opts ARGV
 parser.parse arguments
 
-fabrics = Hilight::Quilts.constants.map { |c| Hilight::Quilts.const_get c }
-
 ### Execution
 if cmd.any?
   cmd_string = cmd.join(' ')
 
-  quilt = fabrics.find { |q| q.match? cmd_string }
-  quilt ||= default
+  quilt = Hilight::Quilts.match_quilt cmd_string
 
   output, process = Open3.capture2e(cmd_string)
-  print quilt.transform output
+
+  if quilt
+    print quilt.transform output
+  else
+    print output
+  end
 
   exit process.exitstatus
 else

@@ -1,5 +1,3 @@
-require 'creatable'
-
 require 'hilight/fabric'
 require 'hilight/pair'
 require 'hilight/pattern'

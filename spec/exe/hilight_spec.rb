@@ -2,8 +2,8 @@ require 'spec_helper'
 
 require 'open3'
 
-RSpec.describe "exe/hilight" do
-  let(:subject) { Open3.capture2e('hilight rspec -h') }
+RSpec.describe "exe/hilight" do # rubocop: disable RSpec/DescribeClass
+  let(:subject) { Open3.capture2e('hilight bundle --help') }
   let(:output) { subject[0] }
   let(:pid) { subject[1] }
 
